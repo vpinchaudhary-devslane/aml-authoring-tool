@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import ENV_CONFIG from 'constant/env.config';
 import createSagaMiddleware from 'redux-saga';
+import ENV_CONFIG from '@/constant/env.config';
 import RootReducer from './reducers';
 import rootSaga from './sagas';
 

@@ -1,4 +1,4 @@
-import { User } from 'models/entities/User';
+import { User } from '@/models/entities/User';
 import { AuthActionType } from './actions.constants';
 
 // TODO: MOVE TO SPECIFIC TYPE FILE

@@ -1,7 +1,7 @@
 import produce from 'immer';
 import { Reducer } from 'redux';
-import { AuthActionType } from 'store/actions/actions.constants';
-import { addOne } from 'store/base/base.reducer';
+import { AuthActionType } from '@/store/actions/actions.constants';
+import { addOne } from '@/store/base/base.reducer';
 import { User } from '../../models/entities/User';
 import { EntityState } from '../base/EntityState';
 

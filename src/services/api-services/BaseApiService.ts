@@ -1,4 +1,4 @@
-import ENV_CONFIG from 'constant/env.config';
+import ENV_CONFIG from '@/constant/env.config';
 import Axios, {
   AxiosRequestConfig,
   AxiosRequestHeaders,
