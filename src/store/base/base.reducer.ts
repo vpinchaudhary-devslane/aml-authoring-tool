@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import { Entity } from 'models/entity';
+import { Entity } from '@/models/entity';
 import { EntityState } from './EntityState';
 
 export const getIds = (entities: Entity[]) => entities.map((e) => e.id);
