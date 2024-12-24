@@ -2,6 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import store from '@/store';
 import { Button } from './components/ui/button';
+import { Input } from './components/ui/input';
 
 const App: React.FC = () => (
   <Provider store={store}>
@@ -15,6 +16,12 @@ const App: React.FC = () => (
         Delete
       </Button>
       <Button variant='outline'>Button</Button>
+    </div>
+    <div className='flex gap-6 items-center p-3'>
+      <span>Input</span>
+      <Input placeholder='Input' />
+      <Input placeholder='Input' disabled />
+      <Input placeholder='Input' hasError />
     </div>
   </Provider>
 );
