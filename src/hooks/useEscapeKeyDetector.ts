@@ -1,0 +1,24 @@
+import { useEffect, useRef } from 'react';
+
+const useEscapeKeyDetector = <P extends HTMLElement>(handler: () => void) => {
+  const ref = useRef<P>(null);
+  useEffect(() => {
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.keyCode === 27) {
+        handler();
+      }
+    }
+
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return ref;
+};
+
+export default useEscapeKeyDetector;
