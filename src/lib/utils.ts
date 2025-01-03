@@ -14,3 +14,10 @@ export const isValueEmpty = (value: any) => {
     ? value?.length === 0
     : value === null || value === undefined || value === '';
 };
+
+export type CacheAPIResponse = {
+  [key: string]: {
+    result: string[];
+    totalCount: number;
+  };
+};
