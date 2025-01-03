@@ -1,6 +1,6 @@
 import AppRoutes from '@/routes/AppRoutes/appRoutes';
 import { AppSidebar } from '@/shared-resources/appSidebar/appSidebar';
-import { SidebarProvider } from '@/shared-resources/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import React from 'react';
 
 const AppLayout: React.FC = () => (

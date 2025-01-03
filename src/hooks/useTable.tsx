@@ -9,7 +9,7 @@ import {
   TableOptions,
   useReactTable,
 } from '@tanstack/react-table';
-import { Checkbox } from '@/shared-resources/ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export function getSelectionColumn<T>() {
   return {

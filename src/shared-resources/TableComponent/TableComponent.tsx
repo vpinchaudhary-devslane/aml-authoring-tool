@@ -10,6 +10,7 @@ import {
   PointerSensor,
 } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { PaginationLimit } from '@/enums/tableEnums';
 import TableSkeleton from './TableSkeleton';
 import AmlPagination from '../AmlPagination/AmlPagination';
 import { TableComponentProps } from './types/TableComponent.types';
@@ -32,16 +33,16 @@ export default function TableComponent<T, S extends Record<string, any>>(
       onDragEnd={props.onDragEnd}
       sensors={sensors}
     >
-      <div className='flex-1 flex flex-col [&_>_div]:flex-1'>
-        <TableSkeleton {...props} />
+      <div className='flex-1 flex flex-col [&_>_div]:flex-[1_0_0] [&_>_div]:border'>
+        <TableSkeleton disableDrag={props.disableDrag} {...props} />
         {!props.noPagination && (
           <AmlPagination
-            currentPage={props.searchFilters.page_no}
-            totalPages={props.totalPages}
+            currentPage={props.searchFilters?.page_no!}
             onPageChange={(pageNo: number) =>
-              props.setSearchFilters((p) => ({ ...p, page_no: pageNo }))
+              props?.setSearchFilters?.((p) => ({ ...p, page_no: pageNo }))
             }
-            totalCount={props.totalCount}
+            totalPages={Math.ceil(props.totalCount / PaginationLimit.PAGE_SIZE)}
+            disabled={props.tableInstance.getRowModel().rows.length === 0}
           />
         )}
       </div>

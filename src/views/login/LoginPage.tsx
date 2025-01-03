@@ -2,10 +2,10 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { Button } from '@/shared-resources/ui/button';
-import { Input } from '@/shared-resources/ui/input';
 import { useDispatch } from 'react-redux';
 import { authLoginAction } from '@/store/actions/auth.action';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -91,8 +91,9 @@ const LoginPage: React.FC = () => {
             {/* Submit Button */}
             <div className='flex justify-center'>
               <Button
+                variant='primary'
                 type='submit'
-                className='w-full py-3 text-lg font-medium text-white bg-gray-700 rounded-lg shadow-md hover:bg-appPrimary focus:ring-4 focus:ring-gray-400 transition-transform transform hover:scale-105'
+                className='w-full transition-transform transform hover:scale-105'
               >
                 Login
               </Button>

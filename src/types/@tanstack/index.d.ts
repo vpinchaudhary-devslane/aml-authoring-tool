@@ -10,5 +10,6 @@ declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export interface ColumnDefBase<TData extends RowData, TValue = unknown> {
     filter?: React.FC<ColumnFilterComponentProps>;
+    cellClassName?: string;
   }
 }
