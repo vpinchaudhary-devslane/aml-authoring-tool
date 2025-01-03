@@ -1,40 +1,17 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import { getSelectionColumn, useTable } from '@/hooks/useTable';
-import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import React, { useMemo, useState } from 'react';
-import { Button } from '@/shared-resources/ui/button';
-import { Input } from '@/shared-resources/ui/input';
 import { tableStringFilter } from '@/shared-resources/TableComponent/Filters/StringFilter';
 import TableComponent from '@/shared-resources/TableComponent/TableComponent';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/shared-resources/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/shared-resources/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared-resources/ui/dropdown-menu';
-import { RadioGroup, RadioGroupItem } from '@/shared-resources/ui/radio-group';
-import { Switch } from '@/shared-resources/ui/switch';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/shared-resources/ui/tooltip';
+import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import React, { useMemo, useState } from 'react';
+import AmlAvatar from './AmlAvatar/AmlAvatar';
+import AmlDialog from './AmlDialog/AmlDialog';
+import AmlMenu from './AmlMenu/AmlMenu';
+import AmlTooltip from './AmlTooltip/AmlTooltip';
 
 type Fruit = {
   identifier: string;
@@ -107,6 +84,8 @@ const DemoComps = () => {
     setSelectedRows,
   });
 
+  const [openDialog, setOpenDialog] = React.useState(false);
+
   return (
     <div className='bg-white flex flex-col w-full min-h-screen'>
       <div className='flex gap-6 items-center p-3'>
@@ -128,39 +107,33 @@ const DemoComps = () => {
       </div>
       <div className='flex flex-col p-3'>
         <span>Avatar</span>
-        <Avatar>
-          <AvatarImage src='https://github.com/shadcn.png' />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
+        <AmlAvatar src='https://github.com/shadcn.png' alt='CN' />
       </div>
       <div className='flex flex-col p-3'>
-        <span>Dialog</span>
-        <Dialog>
-          <DialogTrigger>Open</DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you absolutely sure?</DialogTitle>
-              <DialogDescription>
-                This action cannot be undone. This will permanently delete your
-                account and remove your data from our servers.
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+        <button onClick={() => setOpenDialog(true)}>Dialog</button>
+        <AmlDialog
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          title='Are you absolutely sure?'
+          description='This action cannot be undone. This will permanently delete your account and remove your data from our servers.'
+          primaryButtonText='Yes'
+          secondaryButtonText='No'
+          onPrimaryButtonClick={() => setOpenDialog(false)}
+          onSecondaryButtonClick={() => setOpenDialog(false)}
+        />
       </div>
       <div className='flex flex-col p-3'>
         <span>Menu</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Team</DropdownMenuItem>
-            <DropdownMenuItem>Subscription</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AmlMenu
+          trigger='Open'
+          label='My Account'
+          menuItems={[
+            {
+              label: 'Profile',
+              onClick: () => {},
+            },
+          ]}
+        />
       </div>
       <div className='flex flex-col p-3'>
         <span>Radio Group</span>
@@ -180,15 +153,7 @@ const DemoComps = () => {
         <Switch />
       </div>
       <div className='flex flex-col p-3'>
-        <span>Tooltip</span>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>Hover</TooltipTrigger>
-            <TooltipContent>
-              <p>Add to library</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <AmlTooltip tooltip='Tooltip text'>Tooltip</AmlTooltip>
       </div>
       <div className='flex flex-col flex-1 p-3'>
         <span>Table</span>
@@ -197,7 +162,6 @@ const DemoComps = () => {
           searchFilters={searchFilters}
           setSearchFilters={setSearchFilters}
           totalCount={100}
-          totalPages={10}
         />
       </div>
     </div>

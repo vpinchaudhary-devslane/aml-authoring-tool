@@ -10,3 +10,13 @@ export enum AuthActionType {
 
   LOGOUT = 'store/logout',
 }
+
+// questionSet
+export enum QuestionSetActionType {
+  GET_LIST = 'questionSet/getList',
+  GET_LIST_COMPLETED = 'questionSet/getList/completed',
+  GET_LIST_ERROR = 'questionSet/getList/error',
+
+  DELETE_QUESTION_SET = 'questionSet/delete',
+  DELETE_QUESTION_SET_COMPLETED = 'questionSet/delete/completed',
+}

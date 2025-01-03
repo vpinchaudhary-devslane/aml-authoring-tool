@@ -3,10 +3,12 @@ import { authReducer } from './auth.reducer';
 import { userReducer } from './user.reducer';
 import { navigationReducer } from './NavigationReducer';
 import { AuthActionType } from '../actions/actions.constants';
+import { questionSetReducer } from './questionSet.reducer';
 
 const appReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
+  questionSet: questionSetReducer,
   navigationReducer,
 });
 

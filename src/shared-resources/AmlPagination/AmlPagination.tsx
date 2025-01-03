@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -7,25 +7,28 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '../ui/pagination';
+} from '../../components/ui/pagination';
 
 interface AmlPaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  totalCount?: number;
+  disabled?: boolean;
 }
 
 const AmlPagination: React.FC<AmlPaginationProps> = ({
   currentPage = 1,
   totalPages = 1,
   onPageChange,
-  totalCount = 0,
+  disabled,
 }) => {
-  const handlePageClick = (page: number) => {
-    if (page === currentPage) return;
-    onPageChange(page);
-  };
+  const handlePageClick = useCallback(
+    (page: number) => {
+      if (page === currentPage) return;
+      onPageChange(page);
+    },
+    [currentPage, onPageChange]
+  );
 
   const renderPageNumber = (page: number): React.JSX.Element => (
     <PaginationLink
@@ -49,7 +52,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
         pageNumbers.push(renderPageNumber(i));
       }
       pageNumbers.push(
-        <PaginationItem>
+        <PaginationItem key='ellipsis-1'>
           <PaginationEllipsis />
         </PaginationItem>
       );
@@ -57,7 +60,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
     } else if (currentPage >= totalPages - 3) {
       pageNumbers.push(renderPageNumber(1));
       pageNumbers.push(
-        <PaginationItem>
+        <PaginationItem key='ellipsis-2'>
           <PaginationEllipsis />
         </PaginationItem>
       );
@@ -67,7 +70,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
     } else {
       pageNumbers.push(renderPageNumber(1));
       pageNumbers.push(
-        <PaginationItem>
+        <PaginationItem key='ellipsis-3'>
           <PaginationEllipsis />
         </PaginationItem>
       );
@@ -75,7 +78,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
         pageNumbers.push(renderPageNumber(i));
       }
       pageNumbers.push(
-        <PaginationItem>
+        <PaginationItem key='ellipsis-4'>
           <PaginationEllipsis />
         </PaginationItem>
       );
@@ -85,26 +88,29 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
     return pageNumbers;
   };
 
+  useEffect(() => {
+    if (currentPage > totalPages || currentPage < 1) {
+      handlePageClick(1);
+    }
+  }, [currentPage, handlePageClick, totalPages]);
+
   return (
     <Pagination className='justify-between mt-2'>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            disabled={currentPage === 1}
+            disabled={disabled || currentPage === 1}
             onClick={() => handlePageClick(currentPage - 1)}
           />
         </PaginationItem>
         {renderPageNumbers()}
         <PaginationItem>
           <PaginationNext
-            disabled={currentPage === totalPages}
+            disabled={disabled || currentPage === totalPages}
             onClick={() => handlePageClick(currentPage + 1)}
           />
         </PaginationItem>
       </PaginationContent>
-      <div className='flex flex-col items-center gap-2 mt-3'>
-        <span className='text-sm'>{totalCount} items</span>
-      </div>
     </Pagination>
   );
 };

@@ -1,59 +1,57 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable react/function-component-definition */
-import React, { useState } from 'react';
-import { flexRender } from '@tanstack/react-table';
-import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
-// import { PopoverArrow, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
-import { cn, isValueEmpty } from '@/lib/utils';
-import { SortOrder } from '@/enums/tableEnums';
 import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Table,
   TableBody,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared-resources/ui/table';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared-resources/ui/popover';
-import DraggableRow from './DraggableRow';
+} from '@/components/ui/table';
+import { SortOrder } from '@/enums/tableEnums';
+import { cn, isValueEmpty } from '@/lib/utils';
+import { flexRender } from '@tanstack/react-table';
+import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import React, { useState } from 'react';
 import { TableComponentProps } from './types/TableComponent.types';
+import TableComponentBody from './TableComponentBody';
 
 export default function TableSkeleton<T, S extends Record<string, any>>({
   tableInstance,
   searchFilters,
   setSearchFilters,
+  disableDrag,
+  isLoading,
 }: TableComponentProps<T, S>) {
   const [openedPopup, setOpenedPopup] = useState<string | null>(null);
 
   const handleSortState = (columnId: string) => {
-    if (searchFilters.orderBy === columnId) {
+    if (searchFilters?.orderBy === columnId) {
       const orderBy =
         searchFilters.sortOrder === SortOrder.DESC ? null : columnId;
 
       if (orderBy) {
-        setSearchFilters((p: any) => ({
+        setSearchFilters?.((p: any) => ({
           ...p,
           orderBy,
           sortOrder:
             p.sortOrder === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC,
         }));
       } else {
-        setSearchFilters((p: any) => ({
+        setSearchFilters?.((p: any) => ({
           ...p,
           orderBy: null,
           sortOrder: null,
         }));
       }
     } else {
-      setSearchFilters((p: any) => ({
+      setSearchFilters?.((p: any) => ({
         ...p,
         orderBy: columnId,
         sortOrder: SortOrder.ASC,
@@ -62,7 +60,11 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
   };
 
   return (
-    <Table>
+    <Table
+      className={cn(
+        (isLoading || !tableInstance.getRowModel().rows.length) && 'h-full'
+      )}
+    >
       <TableHeader>
         {tableInstance.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
@@ -71,7 +73,7 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
                 key={header.id}
                 className='[&_button_svg[data-applied=false]]:hover:fill-primary/70 [&_button_svg[data-applied=true]]:hover:fill-primary [&_div[data-applied=false]_svg]:hover:text-primary/70 [&_div[data-applied=true]_svg]:hover:text-primary'
               >
-                <div className='flex gap-3 items-center'>
+                <div className='flex gap-3 items-center justify-center'>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -104,7 +106,7 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
                         {header.column.columnDef.filter?.({
                           filterValue: searchFilters?.[header.id],
                           setFilterValue: (value) =>
-                            setSearchFilters((p: any) => ({
+                            setSearchFilters?.((p: any) => ({
                               ...p,
                               [header.id]: value,
                             })),
@@ -117,13 +119,14 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
                     <div
                       className='h-full w-5 cursor-pointer flex flex-col items-center'
                       onClick={() => handleSortState(header.id)}
-                      data-applied={searchFilters.orderBy === header.id}
+                      data-applied={searchFilters?.orderBy === header.id}
                     >
                       <ChevronUp
                         className={cn(
                           'h-4 w-5 text-slate-400/50',
-                          searchFilters.orderBy === header.id && 'text-primary',
-                          searchFilters.orderBy === header.id &&
+                          searchFilters?.orderBy === header.id &&
+                            'text-primary',
+                          searchFilters?.orderBy === header.id &&
                             searchFilters.sortOrder !== SortOrder.ASC &&
                             'hidden'
                         )}
@@ -131,9 +134,10 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
                       <ChevronDown
                         className={cn(
                           'h-4 w-5 text-slate-400/50',
-                          searchFilters.orderBy === header.id && 'text-primary',
-                          searchFilters.orderBy === header.id &&
-                            searchFilters.sortOrder !== SortOrder.DESC &&
+                          searchFilters?.orderBy === header.id &&
+                            'text-primary',
+                          searchFilters?.orderBy === header.id &&
+                            searchFilters?.sortOrder !== SortOrder.DESC &&
                             'hidden'
                         )}
                       />
@@ -146,14 +150,12 @@ export default function TableSkeleton<T, S extends Record<string, any>>({
         ))}
       </TableHeader>
       <TableBody>
-        <SortableContext
-          items={tableInstance.getRowModel().rows.map((row) => row.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {tableInstance.getRowModel().rows.map((row) => (
-            <DraggableRow key={row.id} row={row} />
-          ))}
-        </SortableContext>
+        <TableComponentBody
+          isLoading={isLoading}
+          rows={tableInstance.getRowModel().rows}
+          columnsLength={tableInstance.getAllColumns().length}
+          disableDrag={disableDrag}
+        />
       </TableBody>
     </Table>
   );
