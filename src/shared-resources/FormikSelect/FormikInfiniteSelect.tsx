@@ -11,10 +11,11 @@ interface FormikInfiniteSelectProps
   name: string;
   label?: string;
   required?: boolean;
+  onValueChange?: (value: any) => void;
 }
 
 const FormikInfiniteSelect: React.FC<FormikInfiniteSelectProps> = (props) => {
-  const { label, name, required } = props;
+  const { label, name, required, onValueChange } = props;
   const [, meta, helpers] = useField(name);
 
   const { value, touched, error } = meta;
@@ -32,7 +33,14 @@ const FormikInfiniteSelect: React.FC<FormikInfiniteSelectProps> = (props) => {
           {label} {required && <span className='text-red-500'>*</span>}
         </label>
       )}
-      <InfiniteSelect value={value} onChange={(v) => setValue(v)} {...props} />
+      <InfiniteSelect
+        value={value}
+        onChange={(v) => {
+          setValue(v);
+          onValueChange?.(v);
+        }}
+        {...props}
+      />
       <ErrorMessage
         className='text-red-500 mt-2 text-sm'
         name={name}

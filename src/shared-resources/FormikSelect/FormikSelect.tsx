@@ -20,7 +20,7 @@ const FormikSelect: React.FC<FormikSelectProps> = (props) => {
   return (
     <div
       className={cn(
-        'flex w-full overflow-hidden flex-col gap-1 mb-2',
+        'flex flex-1 overflow-hidden flex-col gap-1 mb-2',
         Boolean(touched && error) && '[&_button]:!border-red-500'
       )}
     >

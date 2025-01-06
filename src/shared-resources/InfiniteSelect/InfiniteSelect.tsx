@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/popover';
 import { useDispatch } from 'react-redux';
 import { PaginationLimit } from '@/enums/tableEnums';
+import * as _ from 'lodash';
 
-type InfiniteSelectProps<T> = {
-  onChange: (value: T) => void;
-  value: T;
-  renderValue?: (value: T) => React.ReactNode;
+type InfiniteSelectProps = {
+  onChange: (value: any) => void;
+  value: any;
   placeholder?: string;
   data: any[];
   multiple?: boolean;
@@ -22,18 +22,15 @@ type InfiniteSelectProps<T> = {
     type: string;
     payload: any;
   };
-  labelKey: string;
-  valueKey: string;
+  labelKey?: string;
+  valueKey?: string;
   isLoading: boolean;
   totalCount: number;
 };
 
-export const InfiniteSelect = <
-  T extends string | number | (string | number)[]
->({
+export const InfiniteSelect = ({
   onChange,
   value,
-  renderValue,
   placeholder,
   data,
   multiple,
@@ -42,7 +39,7 @@ export const InfiniteSelect = <
   valueKey,
   isLoading,
   totalCount,
-}: InfiniteSelectProps<T>) => {
+}: InfiniteSelectProps) => {
   const [open, setOpen] = React.useState(false);
   const [searchFilters, setSearchFilters] = React.useState({
     value: '',
@@ -50,11 +47,50 @@ export const InfiniteSelect = <
   });
   const [searchValue, setSearchValue] = React.useState('');
   const [options, setOptions] = React.useState<any[]>([]);
+  const [selectedValues, setSelectedValues] = React.useState<any>(() => {
+    if (!Array.isArray(value)) return _.get(value, valueKey ?? '');
+    return value.map((item) => _.get(item, valueKey ?? ''));
+  });
 
   React.useEffect(() => {
     if (data.length) {
-      const newDataArray = structuredClone(options);
+      let newDataArray = structuredClone(options);
+      const preLoadedOptions = Array.isArray(value) ? value : [];
+      const availableOptions = preLoadedOptions.filter((option) => {
+        const itemLabel = _.get(option, labelKey ?? '');
+
+        if (itemLabel.includes(searchFilters.value)) return true;
+        return false;
+      });
+
       newDataArray.push(...data);
+      const newOptions = _.differenceBy(
+        availableOptions,
+        newDataArray,
+        'identifier'
+      );
+      newDataArray.unshift(...newOptions);
+
+      if (!Array.isArray(selectedValues)) {
+        newDataArray = newDataArray.filter(
+          (item) => _.get(item, valueKey ?? '') !== selectedValues
+        );
+        if (value) newDataArray.unshift(value);
+      } else {
+        newDataArray.sort((a, b) => {
+          const itemValueA = _.get(a, valueKey ?? '');
+          const itemValueB = _.get(b, valueKey ?? '');
+
+          const inA = selectedValues.includes(itemValueA);
+          const inB = selectedValues.includes(itemValueB);
+
+          if (inA && inB) return 0;
+          if (inA) return -1;
+          if (inB) return 1;
+          return 0;
+        });
+      }
+
       setOptions(newDataArray);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,28 +137,38 @@ export const InfiniteSelect = <
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, options]);
 
-  const handleSetValue = (val: string | number) => {
+  const handleSetValue = (val: any) => {
     if (!multiple) {
-      onChange(val as T);
+      onChange(val);
+      setSelectedValues(_.get(val, valueKey ?? ''));
       setOpen(false);
       return;
     }
 
-    if (!Array.isArray(value)) return;
+    if (!Array.isArray(selectedValues)) return;
 
-    if (value.includes(val)) {
-      onChange(value.filter((item) => item !== val) as T);
+    if (selectedValues.includes(_.get(val, valueKey ?? ''))) {
+      onChange(
+        value.filter(
+          (item: any) =>
+            _.get(item, valueKey ?? '') !== _.get(val, valueKey ?? '')
+        )
+      );
+      setSelectedValues(
+        selectedValues.filter((item) => _.get(val, valueKey ?? '') !== item)
+      );
     } else {
-      onChange([...value, val] as T);
+      onChange([...value, val]);
+      setSelectedValues([...selectedValues, _.get(val, valueKey ?? '')]);
     }
   };
 
   const checkValue = (val: string | number) => {
     if (Array.isArray(value)) {
-      return value.includes(val);
+      return selectedValues.includes(val);
     }
 
-    return value === val;
+    return selectedValues === val;
   };
   const handleDebouncedSearch = React.useMemo(
     () =>
@@ -157,8 +203,9 @@ export const InfiniteSelect = <
           className='border-input flex justify-between max-w-full'
         >
           <p className='truncate max-w-full'>
-            {renderValue?.(value) ??
-              (Array.isArray(value) ? value.join(', ') : value)}
+            {Array.isArray(value)
+              ? value.map((item) => _.get(item, labelKey ?? '')).join(', ')
+              : _.get(value, labelKey ?? '')}
           </p>
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
@@ -189,16 +236,8 @@ export const InfiniteSelect = <
                 ref={nextPageRef}
               >
                 {options.map((listItem) => {
-                  const itemValue = valueKey
-                    ? valueKey
-                        .split('.')
-                        .reduce((acc, part) => acc && acc[part], listItem ?? {})
-                    : listItem;
-                  const itemLabel = labelKey
-                    ? labelKey
-                        .split('.')
-                        .reduce((acc, part) => acc && acc[part], listItem ?? {})
-                    : listItem;
+                  const itemValue = _.get(listItem, valueKey ?? '');
+                  const itemLabel = _.get(listItem, labelKey ?? '');
 
                   const isSelected = checkValue(itemValue);
 
@@ -209,7 +248,7 @@ export const InfiniteSelect = <
                       key={itemValue}
                       data-selected={isSelected}
                       onClick={() => {
-                        handleSetValue(itemValue);
+                        handleSetValue(listItem);
                       }}
                     >
                       <Check
@@ -222,7 +261,7 @@ export const InfiniteSelect = <
                     </p>
                   );
                 })}
-                {!isLoading && (
+                {isLoading && (
                   <p className='hover:bg-blue-50/80 flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0'>
                     <Check className={cn('mr-2 h-4 w-4 opacity-0')} />
                     Loading...
