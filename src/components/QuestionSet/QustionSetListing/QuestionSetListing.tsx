@@ -16,6 +16,8 @@ import { CellContext, ColumnDef } from '@tanstack/react-table';
 import { Circle, Pencil, Trash } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import QuestionSetDetails from './QuestionSetDetails/QuestionSetDetails';
 
 const coloredDot = (info: CellContext<QuestionSet, unknown>) => (
   <div className='flex items-center justify-center'>
@@ -181,6 +183,21 @@ const QuestionSetListing = () => {
           setOpenDialog({ dialog: null, open: false, questionSetId: null });
         }}
       />
+      <Dialog
+        open={openDialog.open && openDialog.dialog === DialogTypes.DETAILS}
+        onOpenChange={() =>
+          setOpenDialog({ dialog: null, open: false, questionSetId: null })
+        }
+      >
+        <DialogContent className='max-w-[80%] max-h-[95%] overflow-y-auto'>
+          <QuestionSetDetails
+            questionSetId={openDialog.questionSetId}
+            onClose={() =>
+              setOpenDialog({ dialog: null, open: false, questionSetId: null })
+            }
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
