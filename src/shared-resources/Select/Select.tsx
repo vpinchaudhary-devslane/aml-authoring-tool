@@ -72,18 +72,23 @@ export const Select = <T extends string | number | (string | number)[]>({
           variant='outline'
           role='combobox'
           aria-expanded={open}
-          className='w-full justify-between border-input'
+          className='border-input flex justify-between max-w-full'
         >
-          <div>
+          <p className='truncate max-w-full'>
             {renderValue?.(value) ??
               (Array.isArray(value) ? value.join(', ') : value)}
-          </div>
+          </p>
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
       <PopoverContent
         className='p-0'
         style={{ width: selectRef.current?.clientWidth }}
+        ref={(ref) => {
+          if (ref) {
+            ref.addEventListener('wheel', (e) => e.stopPropagation());
+          }
+        }}
       >
         <Command>
           <CommandInput placeholder={placeholder ?? 'Select...'} />
