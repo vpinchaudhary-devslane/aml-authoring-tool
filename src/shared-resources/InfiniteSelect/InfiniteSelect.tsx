@@ -73,11 +73,11 @@ export const InfiniteSelect = ({
 
       if (!Array.isArray(selectedValues)) {
         newDataArray = newDataArray.filter(
-          (item) => _.get(item, valueKey ?? '') !== selectedValues
+          (item: any) => _.get(item, valueKey ?? '') !== selectedValues
         );
         if (value) newDataArray.unshift(value);
       } else {
-        newDataArray.sort((a, b) => {
+        newDataArray.sort((a: any, b: any) => {
           const itemValueA = _.get(a, valueKey ?? '');
           const itemValueB = _.get(b, valueKey ?? '');
 
