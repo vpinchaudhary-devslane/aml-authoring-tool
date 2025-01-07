@@ -67,9 +67,10 @@ export const Select = <T extends string | number | (string | number)[]>({
 
   const validatedValues = React.useMemo(() => {
     if (Array.isArray(value)) {
-      return _.intersectionBy(value, options, 'value').map(
-        (option) => option.value
-      ) as (string | number)[];
+      return _.intersectionBy(
+        value,
+        options.map((option) => option.value)
+      );
     }
 
     return options.find((option) => option.value === value)?.value;

@@ -30,3 +30,38 @@ export enum QuestionsActionType {
   DELETE_QUESTION = 'question/delete',
   DELETE_QUESTION_COMPLETED = 'question/delete/completed',
 }
+
+// repositories
+export enum RepositoryActionType {
+  GET_LIST = 'repository/getList',
+  GET_LIST_COMPLETED = 'repository/getList/completed',
+  GET_LIST_ERROR = 'repository/getList/error',
+}
+
+// boards
+export enum BoardActionType {
+  GET_LIST = 'board/getList',
+  GET_LIST_COMPLETED = 'board/getList/completed',
+  GET_LIST_ERROR = 'board/getList/error',
+}
+
+// classes
+export enum ClassActionType {
+  GET_LIST = 'class/getList',
+  GET_LIST_COMPLETED = 'class/getList/completed',
+  GET_LIST_ERROR = 'class/getList/error',
+}
+
+// skills
+export enum SkillActionType {
+  GET_LIST = 'skill/getList',
+  GET_LIST_COMPLETED = 'skill/getList/completed',
+  GET_LIST_ERROR = 'skill/getList/error',
+}
+
+// subskills
+export enum SubskillActionType {
+  GET_LIST = 'subskill/getList',
+  GET_LIST_COMPLETED = 'subskill/getList/completed',
+  GET_LIST_ERROR = 'subskill/getList/error',
+}

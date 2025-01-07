@@ -22,7 +22,7 @@ export const questionSetsSelector = createSelector(
 
     return {
       result: resultIDs
-        .map((id) => questionSetState.entries[id])
+        .map((id) => questionSetState.entities[id])
         .filter(Boolean),
       totalCount,
     };
@@ -32,4 +32,9 @@ export const questionSetsSelector = createSelector(
 export const filtersQuestionSetsSelector = createSelector(
   [selectQuestionSetState],
   (state: QuestionSetState) => state.filters
+);
+
+export const allQuestionSetsSelector = createSelector(
+  [selectQuestionSetState],
+  (state: QuestionSetState) => state.entities
 );
