@@ -5,12 +5,22 @@ import { navigationReducer } from './NavigationReducer';
 import { AuthActionType } from '../actions/actions.constants';
 import { questionSetReducer } from './questionSet.reducer';
 import { questionsReducer } from './questions.reducer';
+import { repositoryReducer } from './repository.reducer';
+import { boardReducer } from './board.reducer';
+import { classReducer } from './class.reducer';
+import { skillReducer } from './skill.reducer';
+import { subSkillReducer } from './subSkill.reducer';
 
 const appReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   questionSet: questionSetReducer,
   questions: questionsReducer,
+  repository: repositoryReducer,
+  board: boardReducer,
+  class: classReducer,
+  skill: skillReducer,
+  subSkill: subSkillReducer,
   navigationReducer,
 });
 
