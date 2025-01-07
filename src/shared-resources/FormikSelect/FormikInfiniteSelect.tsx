@@ -1,17 +1,21 @@
 import { ErrorMessage, useField } from 'formik';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Select } from '../Select/Select';
+import { InfiniteSelect } from '../InfiniteSelect/InfiniteSelect';
 
-interface FormikSelectProps
-  extends Omit<React.ComponentProps<typeof Select>, 'onChange' | 'value'> {
+interface FormikInfiniteSelectProps
+  extends Omit<
+    React.ComponentProps<typeof InfiniteSelect>,
+    'onChange' | 'value'
+  > {
   name: string;
   label?: string;
   required?: boolean;
+  onValueChange?: (value: any) => void;
 }
 
-const FormikSelect: React.FC<FormikSelectProps> = (props) => {
-  const { label, name, required } = props;
+const FormikInfiniteSelect: React.FC<FormikInfiniteSelectProps> = (props) => {
+  const { label, name, required, onValueChange } = props;
   const [, meta, helpers] = useField(name);
 
   const { value, touched, error } = meta;
@@ -29,7 +33,14 @@ const FormikSelect: React.FC<FormikSelectProps> = (props) => {
           {label} {required && <span className='text-red-500'>*</span>}
         </label>
       )}
-      <Select value={value} onChange={(v) => setValue(v)} {...props} />
+      <InfiniteSelect
+        value={value}
+        onChange={(v) => {
+          setValue(v);
+          onValueChange?.(v);
+        }}
+        {...props}
+      />
       <ErrorMessage
         className='text-red-500 mt-2 text-sm'
         name={name}
@@ -39,4 +50,4 @@ const FormikSelect: React.FC<FormikSelectProps> = (props) => {
   );
 };
 
-export default React.memo(FormikSelect);
+export default React.memo(FormikInfiniteSelect);
