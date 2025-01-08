@@ -16,14 +16,6 @@ export type QuestionSetState = QuestionSetActionPayloadType & {
 const initialState: QuestionSetState = {
   isLoading: false,
   filters: {
-    title: [],
-    repository_id: '',
-    board_id: '',
-    class_id: '',
-    l1_skill_id: '',
-    l2_skill_id: '',
-    l3_skill_id: '',
-    sub_skill_id: '',
     page_no: 1,
   },
   entities: {},
@@ -72,6 +64,22 @@ export const questionSetReducer = (
         draft.entities = {};
         draft.cachedData = {};
         break;
+
+      case QuestionSetActionType.GET_QUESTION_SET:
+        draft.isLoading = true;
+        break;
+      case QuestionSetActionType.GET_QUESTION_SET_COMPLETED:
+        draft.isLoading = false;
+        draft.entities = {
+          ...state.entities,
+          [action.payload.questionSet.identifier]: action.payload.questionSet,
+        };
+        break;
+      case QuestionSetActionType.GET_QUESTION_SET_ERROR:
+        draft.isLoading = false;
+        draft.error = action.payload;
+        break;
+
       default:
         break;
     }

@@ -2,8 +2,10 @@ import { QuestionSet } from '@/models/entities/QuestionSet';
 import { QuestionSetActionType } from './actions.constants';
 
 export type QuestionSetActionPayloadType = {
-  filters: {
-    title: string[];
+  filters: Partial<{
+    is_active: boolean;
+    status: string;
+    search_query: string;
     repository_id: string;
     board_id: string;
     class_id: string;
@@ -11,8 +13,7 @@ export type QuestionSetActionPayloadType = {
     l2_skill_id: string;
     l3_skill_id: string;
     sub_skill_id: string;
-    page_no: number;
-  };
+  }> & { page_no: number };
 };
 
 export type QuestionSetResponseType = {
@@ -47,4 +48,19 @@ export const deleteQuestionSetAction = (questionSetId: string) => ({
 export const deleteQuestionSetCompletedAction = () => ({
   type: QuestionSetActionType.DELETE_QUESTION_SET_COMPLETED,
   payload: {},
+});
+
+export const getQuestionSetAction = (payload: { id: string }) => ({
+  type: QuestionSetActionType.GET_QUESTION_SET,
+  payload,
+});
+
+export const getQuestionSetCompletedAction = (payload: any) => ({
+  type: QuestionSetActionType.GET_QUESTION_SET_COMPLETED,
+  payload,
+});
+
+export const getQuestionSetErrorAction = (message: string) => ({
+  type: QuestionSetActionType.GET_QUESTION_SET_ERROR,
+  payload: message,
 });

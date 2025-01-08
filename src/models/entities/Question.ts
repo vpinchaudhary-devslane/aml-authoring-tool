@@ -48,7 +48,7 @@ export interface Taxonomy {
   class: SubSkill;
   l1_skill: Skill;
   l2_skill: Skill[];
-  l3_skill: null[];
+  l3_skill: Skill[];
 }
 export interface Skill {
   identifier: string;

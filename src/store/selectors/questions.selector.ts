@@ -28,3 +28,8 @@ export const filtersQuestionsSelector = createSelector(
   [questionsState],
   (state: QuestionsState) => state.filters
 );
+
+export const allQuestionsSelector = createSelector(
+  [questionsState],
+  (state: QuestionsState) => state.entities
+);

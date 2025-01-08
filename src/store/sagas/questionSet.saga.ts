@@ -8,6 +8,8 @@ import {
   getListQuestionSetAction,
   getListQuestionSetCompletedAction,
   getListQuestionSetErrorAction,
+  getQuestionSetCompletedAction,
+  getQuestionSetErrorAction,
   QuestionSetActionPayloadType,
 } from '../actions/questionSet.actions';
 import { QuestionSetActionType } from '../actions/actions.constants';
@@ -87,6 +89,26 @@ function* deleteQuestionSetSaga(data: DeleteQuestionSetSagaPayloadType): any {
   }
 }
 
+function* getQuestionSetSaga(data: any): any {
+  try {
+    const { id } = data.payload;
+
+    const response: Awaited<ReturnType<typeof questionSetService.getById>> =
+      yield call(questionSetService.getById, id);
+    yield put(
+      getQuestionSetCompletedAction({
+        questionSet: response.result,
+      })
+    );
+  } catch (e: any) {
+    yield put(
+      getQuestionSetErrorAction(
+        (e?.errors && e.errors[0]?.message) || e?.message
+      )
+    );
+  }
+}
+
 function* questionSetSaga() {
   yield all([
     takeLatest(QuestionSetActionType.GET_LIST, getListQuestionSetSaga),
@@ -94,6 +116,7 @@ function* questionSetSaga() {
       QuestionSetActionType.DELETE_QUESTION_SET,
       deleteQuestionSetSaga
     ),
+    takeLatest(QuestionSetActionType.GET_QUESTION_SET, getQuestionSetSaga),
   ]);
 }
 

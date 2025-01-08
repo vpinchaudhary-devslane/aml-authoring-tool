@@ -19,6 +19,10 @@ export enum QuestionSetActionType {
 
   DELETE_QUESTION_SET = 'questionSet/delete',
   DELETE_QUESTION_SET_COMPLETED = 'questionSet/delete/completed',
+
+  GET_QUESTION_SET = 'questionSet/get',
+  GET_QUESTION_SET_COMPLETED = 'questionSet/get/completed',
+  GET_QUESTION_SET_ERROR = 'questionSet/get/error',
 }
 
 // questions

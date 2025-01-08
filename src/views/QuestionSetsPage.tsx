@@ -1,4 +1,4 @@
-import QuestionSetListing from '@/components/QuestionSet/QustionSetListing/QuestionSetListing';
+import QuestionSetListing from '@/components/QuestionSet/QuestionSetListing/QuestionSetListing';
 import React from 'react';
 
 const QuestionSetsPage: React.FC = () => (
