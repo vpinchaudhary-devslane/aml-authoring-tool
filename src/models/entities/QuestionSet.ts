@@ -1,5 +1,5 @@
-import { QuestionType } from '@/models/enums/QuestionType.enum';
 import { SkillType } from '@/models/enums/skillType.enum';
+import { Question } from './Question';
 
 export interface QuestionSet {
   identifier: string;
@@ -61,57 +61,4 @@ export interface Skill {
   identifier: string;
   name: Name;
   type: SkillType;
-}
-export interface Question {
-  identifier: string;
-  benchmark_time: number;
-  question_type: string;
-  questionType?: QuestionType;
-  operation: string;
-  name: Description;
-  description: Description;
-  tenant: string;
-  repository: Repository;
-  taxonomy: Taxonomy;
-  gradient: string | null;
-  hints: string;
-  status: string;
-  media: any[];
-  question_body: QuestionBody;
-  sub_skills: Array<SubSkill | null>;
-  created_by: string;
-  updated_by: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface QuestionBody {
-  answers?: Answers;
-  numbers: Numbers;
-  wrong_answer: WrongAnswer[];
-  options?: string[];
-  correct_option?: string;
-  question_image_url?: string;
-}
-
-interface Answers {
-  result: number;
-  isPrefil: boolean;
-  answerTop: string;
-  answerResult: string;
-}
-
-interface WrongAnswer {
-  value: number[];
-  subskillname: Subskillname;
-}
-
-enum Subskillname {
-  Carry = 'carry',
-  XPlus0 = 'x_plus_0',
-}
-
-interface Numbers {
-  [key: string]: string | null;
 }

@@ -12,7 +12,7 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive text-white shadow-sm hover:bg-destructive/90',
         outline:
-          'border border-2 border-primary bg-white text-primary shadow-sm hover:bg-accent hover:text-primary',
+          'border disabled:border-none border-2 border-primary bg-white text-primary shadow-sm hover:bg-accent hover:text-primary',
         ghost: 'hover:bg-accent transition-colors text-primary',
         primary:
           'py-3 text-lg font-medium text-white bg-gray-700 rounded-lg shadow-md hover:bg-gray-800 focus:ring-4 focus:ring-gray-400 transition-transform transform hover:scale-105',

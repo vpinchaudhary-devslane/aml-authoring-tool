@@ -13,13 +13,19 @@ import {
   questionSetsSelector,
 } from '@/store/selectors/questionSet.selector';
 import { CellContext, ColumnDef } from '@tanstack/react-table';
-import { Circle, Info, Pencil, PlusCircle, Trash } from 'lucide-react';
+import { Circle, Filter, Info, Pencil, Plus, Trash } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { NavLink, useLocation } from 'react-router-dom';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import QuestionSetDetails from './QuestionSetDetails/QuestionSetDetails';
+import QuestionSetFilters from '../QuestionSetFilters';
 
 const coloredDot = (info: CellContext<QuestionSet, unknown>) => (
   <div className='flex items-center justify-center'>
@@ -71,7 +77,7 @@ const QuestionSetListing = () => {
         accessorKey: 'title',
         header: 'Title',
         cell: (info) => (info.getValue() as QuestionSet['title']).en,
-        cellClassName: 'max-w-64 text-left',
+        cellClassName: 'max-w-80 truncate text-left',
       },
       {
         accessorKey: 'repository',
@@ -84,19 +90,20 @@ const QuestionSetListing = () => {
         cell: (info) => (info.getValue() as QuestionSet['questions']).length,
       },
       {
-        accessorKey: 'tenant',
-        header: 'Tenant',
-        cell: (info) => info.getValue() || '--',
+        accessorKey: 'l1_skill',
+        header: 'L1 Skill',
+        cell: ({ row }) => row.original?.taxonomy?.l1_skill?.name?.en ?? '--',
       },
       {
-        accessorKey: 'sub_skills',
-        header: 'Sub Skills',
-        cell: (info) =>
-          (info.getValue() as QuestionSet['sub_skills']).length > 0
-            ? (info.getValue() as QuestionSet['sub_skills'])
-                .map((subSkill) => subSkill.name.en)
+        accessorKey: 'l2_skills',
+        header: 'L2 Skills',
+        cell: ({ row }) =>
+          row.original?.taxonomy?.l2_skill?.length
+            ? row.original?.taxonomy?.l2_skill
+                ?.map((l2) => l2.name.en)
                 .join(', ')
             : '--',
+        cellClassName: 'max-w-80 truncate',
       },
       {
         accessorKey: 'purpose',
@@ -106,15 +113,6 @@ const QuestionSetListing = () => {
         accessorKey: 'enable_feedback',
         header: 'Show Feedback',
         cell: coloredDot,
-      },
-      {
-        accessorKey: 'is_atomic',
-        header: 'Is Atomic',
-        cell: coloredDot,
-      },
-      {
-        accessorKey: 'gradient',
-        header: 'Gradient',
       },
       {
         accessorKey: 'menu',
@@ -168,8 +166,24 @@ const QuestionSetListing = () => {
 
   return (
     <>
-      <div className='flex items-center gap-6 mb-4'>
-        <h1 className='text-2xl font-bold'>Question Sets</h1>
+      <div className='flex items-center justify-between gap-6 mb-4'>
+        <h1 className='flex items-center gap-3 text-2xl font-bold'>
+          Question Sets
+          <Popover>
+            <PopoverTrigger asChild>
+              <Filter className='fill-primary/30 hover:fill-primary/70 [data-applied=true]:fill-primary text-primary/50' />
+            </PopoverTrigger>
+            <PopoverContent
+              className='w-[600px] max-h-[95%] overflow-y-auto'
+              side='right'
+            >
+              <QuestionSetFilters
+                searchFilters={searchFilters}
+                setSearchFilters={setSearchFilters}
+              />
+            </PopoverContent>
+          </Popover>
+        </h1>
         <Button
           onClick={() =>
             setOpenDialog({
@@ -179,7 +193,7 @@ const QuestionSetListing = () => {
             })
           }
         >
-          <PlusCircle /> New
+          <Plus /> Create
         </Button>
       </div>
       <div className='flex-1 flex flex-col'>

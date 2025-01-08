@@ -3,7 +3,7 @@ import { QuestionType } from '@/models/enums/QuestionType.enum';
 import { QuestionsActionType } from './actions.constants';
 
 export type QuestionsActionPayloadType = {
-  filters: {
+  filters: Partial<{
     question_type: Array<QuestionType>;
     repository_id: string;
     board_id: string;
@@ -12,8 +12,7 @@ export type QuestionsActionPayloadType = {
     l2_skill_id: string;
     l3_skill_id: string;
     sub_skill_id: string;
-    page_no: number;
-  };
+  }> & { page_no: number };
 };
 export type QuestionsResponseType = {
   questions: Question[];

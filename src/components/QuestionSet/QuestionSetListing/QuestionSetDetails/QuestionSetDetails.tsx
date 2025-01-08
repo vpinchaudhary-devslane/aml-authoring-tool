@@ -53,14 +53,17 @@ const QuestionSetDetails = ({
 
   const initialValues = {
     // Base
-    repository: questionSet?.repository ?? {},
-    board: questionSet?.taxonomy?.board ?? {},
-    class: questionSet?.taxonomy?.class ?? {},
-    tenant: questionSet?.tenant ?? '',
-    l1_skill: questionSet?.taxonomy?.l1_skill ?? {},
-    l2_skills: questionSet?.taxonomy?.l2_skill ?? [],
-    l3_skills: questionSet?.taxonomy?.l3_skill ?? [],
-    sub_skills: questionSet?.sub_skills ?? [],
+    repository: questionSet?.repository?.identifier ?? '',
+    board: questionSet?.taxonomy?.board?.identifier ?? '',
+    class: questionSet?.taxonomy?.class?.identifier ?? '',
+    l1_skill: questionSet?.taxonomy?.l1_skill?.identifier ?? '',
+    l2_skills: questionSet?.taxonomy?.l2_skill?.map(
+      (skill) => skill.identifier
+    ),
+    l3_skills: questionSet?.taxonomy?.l3_skill?.map(
+      (skill) => skill.identifier
+    ),
+    sub_skills: questionSet?.sub_skills?.map((skill) => skill.identifier),
     content_ids: questionSet?.content_ids ?? [],
     purpose: questionSet?.purpose ?? '',
 
@@ -103,22 +106,20 @@ const QuestionSetDetails = ({
 
   const supportedLanguages = useMemo(() => {
     const res = {} as { [k: string]: boolean };
-    if (selectedBoard) {
-      const requiredLangs = Object.keys(selectedBoard.supported_lang ?? {});
+    const requiredLangs = Object.keys(selectedBoard?.supported_lang ?? {});
 
-      if (!requiredLangs.includes(SupportedLanguages.EN)) {
-        requiredLangs.unshift(SupportedLanguages.EN);
-      }
-      requiredLangs.forEach((lang) => {
-        res[lang] = true;
-      });
-
-      Object.values(SupportedLanguages).forEach((lang) => {
-        if (!res[lang]) {
-          res[lang] = false;
-        }
-      });
+    if (!requiredLangs.includes(SupportedLanguages.EN)) {
+      requiredLangs.unshift(SupportedLanguages.EN);
     }
+    requiredLangs.forEach((lang) => {
+      res[lang] = true;
+    });
+
+    Object.values(SupportedLanguages).forEach((lang) => {
+      if (!res[lang]) {
+        res[lang] = false;
+      }
+    });
     return res;
   }, [selectedBoard]);
 
@@ -142,16 +143,16 @@ const QuestionSetDetails = ({
           title: values.title,
           description: values.description,
           instruction_text: values.instruction_text,
-          repository_id: values.repository.identifier,
-          board_id: values.board.identifier,
-          class_id: values.class.identifier,
+          repository_id: values.repository,
+          board_id: values.board,
+          class_id: values.class,
           tenant_id: '',
           content_ids: [],
           questions: [],
-          l1_skill_id: values.l1_skill.identifier,
-          l2_skill_ids: values.l2_skills.map((l2) => l2.identifier),
-          l3_skill_ids: values.l3_skills.map((l3) => l3?.identifier),
-          sub_skill_ids: values.sub_skills.map((sub) => sub.identifier),
+          l1_skill_id: values.l1_skill,
+          l2_skill_ids: values.l2_skills,
+          l3_skill_ids: values.l3_skills,
+          sub_skill_ids: values.sub_skills,
           sequence: values.sequence,
           purpose: values.purpose,
           enable_feedback: Boolean(values.enable_feedback),
@@ -190,6 +191,7 @@ const QuestionSetDetails = ({
               isLoading={isLoadingBoard}
               totalCount={boardsCount}
               onValueChange={(value) => setSelectedBoard(value)}
+              preLoadedOptions={[questionSet?.taxonomy?.board]}
               required
             />
             <FormikInfiniteSelect
@@ -209,6 +211,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingRepository}
               totalCount={repositoriesCount}
+              preLoadedOptions={[questionSet?.repository]}
               required
             />
           </div>
@@ -230,6 +233,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingClass}
               totalCount={classesCount}
+              preLoadedOptions={[questionSet?.taxonomy?.class]}
               required
             />
             <FormikInfiniteSelect
@@ -250,6 +254,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingSkill}
               totalCount={l1SkillsCount}
+              preLoadedOptions={[questionSet?.taxonomy?.l1_skill]}
               required
             />
           </div>
@@ -272,6 +277,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingSkills}
               totalCount={l2SkillsCount}
+              preLoadedOptions={questionSet?.taxonomy?.l2_skill}
               multiple
               required
             />
@@ -293,6 +299,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingSkills}
               totalCount={l3SkillsCount}
+              preLoadedOptions={questionSet?.taxonomy?.l3_skill}
               multiple
               required
             />
@@ -315,6 +322,7 @@ const QuestionSetDetails = ({
               }
               isLoading={isLoadingSubSkill}
               totalCount={subSkillsCount}
+              preLoadedOptions={questionSet?.sub_skills}
               multiple
               required
             />
@@ -332,17 +340,17 @@ const QuestionSetDetails = ({
           <MultiLangFormikInput
             name='title'
             label='Title'
-            supportedLanguages={Object.keys(supportedLanguages)}
+            supportedLanguages={supportedLanguages}
           />
           <MultiLangFormikInput
             name='description'
             label='Description'
-            supportedLanguages={Object.keys(supportedLanguages)}
+            supportedLanguages={supportedLanguages}
           />
           <MultiLangFormikInput
             name='instruction_text'
             label='Description'
-            supportedLanguages={Object.keys(supportedLanguages)}
+            supportedLanguages={supportedLanguages}
           />
           <div className='flex w-full gap-6 items-start'>
             <FormikInput

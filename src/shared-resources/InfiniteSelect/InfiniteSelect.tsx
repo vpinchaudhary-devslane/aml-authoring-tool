@@ -14,7 +14,6 @@ import * as _ from 'lodash';
 
 type InfiniteSelectProps = {
   onChange: (value: any) => void;
-  value: any;
   placeholder?: string;
   data: any[];
   multiple?: boolean;
@@ -26,11 +25,11 @@ type InfiniteSelectProps = {
   valueKey?: string;
   isLoading: boolean;
   totalCount: number;
+  preLoadedOptions?: any[];
 };
 
 export const InfiniteSelect = ({
   onChange,
-  value,
   placeholder,
   data,
   multiple,
@@ -39,6 +38,7 @@ export const InfiniteSelect = ({
   valueKey,
   isLoading,
   totalCount,
+  preLoadedOptions = [],
 }: InfiniteSelectProps) => {
   const [open, setOpen] = React.useState(false);
   const [searchFilters, setSearchFilters] = React.useState({
@@ -47,21 +47,27 @@ export const InfiniteSelect = ({
   });
   const [searchValue, setSearchValue] = React.useState('');
   const [options, setOptions] = React.useState<any[]>([]);
-  const [selectedValues, setSelectedValues] = React.useState<any>(() => {
-    if (!Array.isArray(value)) return _.get(value, valueKey ?? '');
-    return value.map((item) => _.get(item, valueKey ?? ''));
+  const [values, setValues] = React.useState<any>(() => {
+    if (!multiple) return preLoadedOptions[0];
+    return preLoadedOptions;
   });
+
+  const selectedValues = React.useMemo(() => {
+    if (!multiple) return _.get(values, valueKey ?? '');
+    return values.map((item: any) => _.get(item, valueKey ?? ''));
+  }, [multiple, values, valueKey]);
 
   React.useEffect(() => {
     if (data.length) {
-      let newDataArray = structuredClone(options);
-      const preLoadedOptions = Array.isArray(value) ? value : [];
-      const availableOptions = preLoadedOptions.filter((option) => {
-        const itemLabel = _.get(option, labelKey ?? '');
+      const newDataArray = structuredClone(options);
+      const availableOptions = (multiple ? values : [values]).filter(
+        (option: any) => {
+          const itemLabel = _.get(option, labelKey ?? '');
 
-        if (itemLabel.includes(searchFilters.value)) return true;
-        return false;
-      });
+          if (itemLabel.includes(searchFilters.value)) return true;
+          return false;
+        }
+      );
 
       newDataArray.push(...data);
       const newOptions = _.differenceBy(
@@ -69,27 +75,21 @@ export const InfiniteSelect = ({
         newDataArray,
         'identifier'
       );
+
       newDataArray.unshift(...newOptions);
 
-      if (!Array.isArray(selectedValues)) {
-        newDataArray = newDataArray.filter(
-          (item: any) => _.get(item, valueKey ?? '') !== selectedValues
-        );
-        if (value) newDataArray.unshift(value);
-      } else {
-        newDataArray.sort((a: any, b: any) => {
-          const itemValueA = _.get(a, valueKey ?? '');
-          const itemValueB = _.get(b, valueKey ?? '');
+      newDataArray.sort((a: any, b: any) => {
+        const itemValueA = _.get(a, valueKey ?? '');
+        const itemValueB = _.get(b, valueKey ?? '');
 
-          const inA = selectedValues.includes(itemValueA);
-          const inB = selectedValues.includes(itemValueB);
+        const inA = (selectedValues ?? []).includes(itemValueA);
+        const inB = (selectedValues ?? []).includes(itemValueB);
 
-          if (inA && inB) return 0;
-          if (inA) return -1;
-          if (inB) return 1;
-          return 0;
-        });
-      }
+        if (inA && inB) return 0;
+        if (inA) return -1;
+        if (inB) return 1;
+        return 0;
+      });
 
       setOptions(newDataArray);
     }
@@ -140,7 +140,7 @@ export const InfiniteSelect = ({
   const handleSetValue = (val: any) => {
     if (!multiple) {
       onChange(val);
-      setSelectedValues(_.get(val, valueKey ?? ''));
+      setValues(val);
       setOpen(false);
       return;
     }
@@ -148,23 +148,20 @@ export const InfiniteSelect = ({
     if (!Array.isArray(selectedValues)) return;
 
     if (selectedValues.includes(_.get(val, valueKey ?? ''))) {
-      onChange(
-        value.filter(
-          (item: any) =>
-            _.get(item, valueKey ?? '') !== _.get(val, valueKey ?? '')
-        )
+      const filteredVals = values.filter(
+        (item: any) =>
+          _.get(item, valueKey ?? '') !== _.get(val, valueKey ?? '')
       );
-      setSelectedValues(
-        selectedValues.filter((item) => _.get(val, valueKey ?? '') !== item)
-      );
+      setValues(filteredVals);
+      onChange(filteredVals);
     } else {
-      onChange([...value, val]);
-      setSelectedValues([...selectedValues, _.get(val, valueKey ?? '')]);
+      onChange([...values, val]);
+      setValues([...values, val]);
     }
   };
 
   const checkValue = (val: string | number) => {
-    if (Array.isArray(value)) {
+    if (multiple) {
       return selectedValues.includes(val);
     }
 
@@ -203,9 +200,11 @@ export const InfiniteSelect = ({
           className='border-input flex justify-between max-w-full'
         >
           <p className='truncate max-w-full'>
-            {Array.isArray(value)
-              ? value.map((item) => _.get(item, labelKey ?? '')).join(', ')
-              : _.get(value, labelKey ?? '')}
+            {multiple
+              ? values
+                  .map((item: any) => _.get(item, labelKey ?? ''))
+                  .join(', ')
+              : _.get(values, labelKey ?? '')}
           </p>
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
