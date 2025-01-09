@@ -1,3 +1,4 @@
+import { Question } from '@/models/entities/Question';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -21,6 +22,11 @@ export type CacheAPIResponse = {
     totalCount: number;
   };
 };
+
+export type QuestionOrderType = Pick<
+  Question,
+  'identifier' | 'description' | 'question_type' | 'taxonomy' | 'question_body'
+>;
 
 export function debounce<T extends (...args: any[]) => any>(
   func: T,

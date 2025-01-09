@@ -29,6 +29,9 @@ export enum QuestionSetActionType {
 
   UPDATE_QUESTION_SET = 'questionSet/update',
   UPDATE_QUESTION_SET_COMPLETED = 'questionSet/update/completed',
+
+  PUBLISH_QUESTION_SET = 'questionSet/publish',
+  PUBLISH_QUESTION_SET_COMPLETED = 'questionSet/publish/completed',
 }
 
 // questions

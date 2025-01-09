@@ -114,7 +114,6 @@ const QuestionSetDetails = ({
   const { result: l3Skills, totalCount: l3SkillsCount } =
     useSelector(l3SkillSelector);
 
-  const isLoadingSkills = useSelector(isLoadingSkillsSelector);
   const isLoadingBoard = useSelector(isLoadingBoardsSelector);
   const isLoadingRepository = useSelector(isLoadingRepositoriesSelector);
   const isLoadingClass = useSelector(isLoadingClassesSelector);
@@ -350,7 +349,7 @@ const QuestionSetDetails = ({
                   },
                 })
               }
-              isLoading={isLoadingSkills}
+              isLoading={isLoadingSkill}
               totalCount={l2SkillsCount}
               preLoadedOptions={questionSet?.taxonomy?.l2_skill}
               multiple
@@ -371,7 +370,7 @@ const QuestionSetDetails = ({
                   },
                 })
               }
-              isLoading={isLoadingSkills}
+              isLoading={isLoadingSkill}
               totalCount={l3SkillsCount}
               preLoadedOptions={questionSet?.taxonomy?.l3_skill}
               multiple

@@ -1,7 +1,14 @@
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SkillType } from '@/models/enums/skillType.enum';
 import FormikInfiniteSelect from '@/shared-resources/FormikSelect/FormikInfiniteSelect';
+import { getListClassAction } from '@/store/actions/class.action';
 import { getListSkillAction } from '@/store/actions/skill.action';
+import {
+  classesSelector,
+  isLoadingClassesSelector,
+} from '@/store/selectors/class.selector';
+import { createEntitySelectorFactory } from '@/store/selectors/root.selectors';
 import {
   isLoadingSkillsSelector,
   l2SkillSelector,
@@ -15,10 +22,16 @@ type Props = {
   open: boolean;
   onClose: () => void;
   filterState: {
+    class_id: string;
     l2_skill: string;
     l3_skill: string;
   };
-  setFilterState: (state: { l2_skill: string; l3_skill: string }) => void;
+  setFilterState: (state: {
+    l2_skill: string;
+    class_id: string;
+    l3_skill: string;
+  }) => void;
+  enableClassFilter: boolean;
 };
 
 const QuestionSetReorderQuestionFilterComponent = ({
@@ -26,13 +39,27 @@ const QuestionSetReorderQuestionFilterComponent = ({
   onClose,
   filterState,
   setFilterState,
+  enableClassFilter,
 }: Props) => {
   const { result: l2Skills, totalCount: l2SkillsCount } =
     useSelector(l2SkillSelector);
   const { result: l3Skills, totalCount: l3SkillsCount } =
     useSelector(l3SkillSelector);
+  const { result: classes, totalCount: classesCount } =
+    useSelector(classesSelector);
 
   const isLoadingSkills = useSelector(isLoadingSkillsSelector);
+  const isLoadingClasses = useSelector(isLoadingClassesSelector);
+
+  const selectedL2Skill = useSelector(
+    createEntitySelectorFactory('skill', filterState.l2_skill)
+  );
+  const selectedL3Skill = useSelector(
+    createEntitySelectorFactory('skill', filterState.l3_skill)
+  );
+  const selectedClass = useSelector(
+    createEntitySelectorFactory('class', filterState.class_id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -52,8 +79,29 @@ const QuestionSetReorderQuestionFilterComponent = ({
               <h2 className='text-xl font-semibold mb-6'>
                 Apply filters - Questions
               </h2>
+              {enableClassFilter && (
+                <FormikInfiniteSelect
+                  name='class_id'
+                  label='Class'
+                  placeholder='Select Class'
+                  data={classes}
+                  labelKey='name.en'
+                  valueKey='identifier'
+                  dispatchAction={(payload) =>
+                    getListClassAction({
+                      filters: {
+                        search_query: payload.value,
+                        page_no: payload.page_no,
+                      },
+                    })
+                  }
+                  isLoading={isLoadingClasses}
+                  totalCount={classesCount}
+                  preLoadedOptions={[selectedClass]}
+                />
+              )}
               <FormikInfiniteSelect
-                name='l2_skills'
+                name='l2_skill'
                 label='L2 Skill'
                 placeholder='Select L2 skills'
                 data={l2Skills}
@@ -70,10 +118,10 @@ const QuestionSetReorderQuestionFilterComponent = ({
                 }
                 isLoading={isLoadingSkills}
                 totalCount={l2SkillsCount}
-                multiple
+                preLoadedOptions={[selectedL2Skill]}
               />
               <FormikInfiniteSelect
-                name='l3_skills'
+                name='l3_skill'
                 label='L3 Skill'
                 placeholder='Select L3 skills'
                 data={l3Skills}
@@ -90,8 +138,25 @@ const QuestionSetReorderQuestionFilterComponent = ({
                 }
                 isLoading={isLoadingSkills}
                 totalCount={l3SkillsCount}
-                multiple
+                preLoadedOptions={[selectedL3Skill]}
               />
+              <div className='flex gap-3'>
+                <Button type='submit'>Apply</Button>
+                <Button
+                  type='button'
+                  onClick={() => {
+                    setFilterState({
+                      l2_skill: '',
+                      l3_skill: '',
+                      class_id: enableClassFilter ? '' : filterState.class_id,
+                    });
+                    onClose();
+                  }}
+                  variant='outline'
+                >
+                  Cancel
+                </Button>
+              </div>
             </form>
           )}
         </Formik>
