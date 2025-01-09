@@ -73,6 +73,14 @@ class QuestionSetService {
       data
     );
   }
+
+  async publish(questionSetId: string) {
+    return baseApiService.post(
+      `/api/v1/question-set/publish/${questionSetId}`,
+      'api.questionSet.publish',
+      {}
+    );
+  }
 }
 
 export const questionSetService = QuestionSetService.getInstance();

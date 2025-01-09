@@ -1,5 +1,5 @@
 import { SagaPayloadType } from '@/types/SagaPayload.type';
-import { all, call, put, select, takeLatest } from 'redux-saga/effects';
+import { all, call, put, select, take, takeLatest } from 'redux-saga/effects';
 import { questionSetService } from '@/services/api-services/QuestionSetService';
 import { PaginationLimit } from '@/enums/tableEnums';
 import { toastService } from '@/services/ToastService';
@@ -10,8 +10,10 @@ import {
   getListQuestionSetAction,
   getListQuestionSetCompletedAction,
   getListQuestionSetErrorAction,
+  getQuestionSetAction,
   getQuestionSetCompletedAction,
   getQuestionSetErrorAction,
+  publishQuestionSetCompletedAction,
   QuestionSetActionPayloadType,
   updateQuestionSetCompletedAction,
 } from '../actions/questionSet.actions';
@@ -164,6 +166,45 @@ function* updateQuestionSetSaga(data: UpdateQuestionSetPayloadType): any {
         filters,
       })
     );
+
+    yield take(QuestionSetActionType.GET_LIST_COMPLETED);
+
+    yield put(
+      getQuestionSetAction({
+        id: data.payload?.questionSetId,
+      })
+    );
+  } catch (e: any) {
+    toastService.showError((e?.errors && e.errors[0]?.message) || e?.message);
+  }
+}
+
+function* publishQuestionSetSaga(data: DeleteQuestionSetSagaPayloadType): any {
+  try {
+    const filters: QuestionSetActionPayloadType['filters'] = yield select(
+      (state: AppState) => state.questionSet.filters
+    );
+
+    const response = yield call(
+      questionSetService.publish,
+      data.payload?.questionSetId
+    );
+    yield put(publishQuestionSetCompletedAction(response));
+
+    toastService.showSuccess('Question Set published successfully');
+    yield put(
+      getListQuestionSetAction({
+        filters,
+      })
+    );
+
+    yield take(QuestionSetActionType.GET_LIST_COMPLETED);
+
+    yield put(
+      getQuestionSetAction({
+        id: data.payload?.questionSetId,
+      })
+    );
   } catch (e: any) {
     toastService.showError((e?.errors && e.errors[0]?.message) || e?.message);
   }
@@ -184,6 +225,10 @@ function* questionSetSaga() {
     takeLatest(
       QuestionSetActionType.UPDATE_QUESTION_SET,
       updateQuestionSetSaga
+    ),
+    takeLatest(
+      QuestionSetActionType.PUBLISH_QUESTION_SET,
+      publishQuestionSetSaga
     ),
   ]);
 }

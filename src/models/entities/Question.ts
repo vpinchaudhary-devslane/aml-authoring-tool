@@ -86,6 +86,7 @@ export interface QuestionBody {
   options?: string[];
   correct_option?: string;
   question_image?: string;
+  question_image_url?: string;
 }
 
 export interface Answers {

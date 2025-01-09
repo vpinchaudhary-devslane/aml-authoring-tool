@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Question, QuestionSet } from '@/models/entities/Question';
+import { cn, QuestionOrderType } from '@/lib/utils';
+import { QuestionSet } from '@/models/entities/Question';
 import AmlTooltip from '@/shared-resources/AmlTooltip/AmlTooltip';
 import { InfiniteSelect } from '@/shared-resources/InfiniteSelect/InfiniteSelect';
 import { getListQuestionsAction } from '@/store/actions/question.action';
@@ -28,22 +28,20 @@ import { CSS } from '@dnd-kit/utilities';
 import { Filter, PlusCircle, Trash } from 'lucide-react';
 import React, { CSSProperties, useState } from 'react';
 import { useSelector } from 'react-redux';
-import QuestionSetReorderQuestionFilterComponent from './QuestionSetReorderQuestionFilterComponent';
+import { QuestionSetPurposeType } from '@/enums/questionSet.enum';
+import * as _ from 'lodash';
+import QuestionSetReorderQuestionFilterComponent from '../QuestionSetReorderQuestionFilterComponent';
 
 type QuestionSetQuestionsReorderComponentProps = {
-  questions: Question[];
+  questionsOrder: QuestionOrderType[];
   questionSet: QuestionSet;
+  setQuestionsOrder: React.Dispatch<React.SetStateAction<QuestionOrderType[]>>;
 };
 
 enum DialogTypes {
   FILTER = 'filter',
   CONTENT = 'content',
 }
-
-type QuestionOrderType = Pick<
-  Question,
-  'identifier' | 'description' | 'question_type' | 'taxonomy' | 'question_body'
->;
 
 const DraggableItem = ({
   question,
@@ -86,11 +84,6 @@ const DraggableItem = ({
       hasValue: Boolean(question?.question_type),
     },
     {
-      label: 'L1 Skill',
-      value: question?.taxonomy?.l1_skill?.name?.en,
-      hasValue: Boolean(question?.taxonomy?.l1_skill?.name?.en),
-    },
-    {
       label: 'L2 Skills',
       value: question?.taxonomy?.l2_skill?.length
         ? question.taxonomy.l2_skill?.map((l2) => l2.name.en).join(', ')
@@ -116,8 +109,8 @@ const DraggableItem = ({
     },
     {
       label: 'Image',
-      value: question?.question_body?.question_image,
-      hasValue: Boolean(question?.question_body?.question_image),
+      value: question?.question_body?.question_image_url,
+      hasValue: Boolean(question?.question_body?.question_image_url),
       hide: true,
     },
     {
@@ -169,21 +162,12 @@ const DraggableItem = ({
 };
 
 const QuestionSetQuestionReorderComponent = ({
-  questions = [],
+  questionsOrder = [],
+  setQuestionsOrder,
   questionSet,
 }: QuestionSetQuestionsReorderComponentProps) => {
-  const [questionsOrder, setQuestionsOrder] = useState<QuestionOrderType[]>(
-    questions.map((item) => ({
-      identifier: item.identifier,
-      description: item.description,
-      taxonomy: item.taxonomy,
-      question_type: item.question_type,
-      question_body: item.question_body,
-    }))
-  );
-
-  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [changeState, setChangeState] = useState<QuestionOrderType[]>([]);
+  const [mountCounter, setMountCounter] = useState(0);
   const [openDialog, setOpenDialog] = useState<{
     open: boolean;
     dialog: DialogTypes | null;
@@ -194,9 +178,11 @@ const QuestionSetQuestionReorderComponent = ({
   const [filterState, setFilterState] = useState<{
     l2_skill: string;
     l3_skill: string;
+    class_id: string;
   }>({
     l2_skill: '',
     l3_skill: '',
+    class_id: '',
   });
 
   const { result, totalCount } = useSelector(questionsSelector);
@@ -223,19 +209,20 @@ const QuestionSetQuestionReorderComponent = ({
   };
 
   const handleRemoveQuestion = (id: string) => {
-    setQuestionsOrder((questionOrder) =>
-      questionOrder.filter((ques) => ques.identifier !== id)
+    setQuestionsOrder((prevOrder) =>
+      prevOrder.filter((ques) => ques.identifier !== id)
     );
   };
 
   const handleQuestionAddition = () => {
-    if (!isAddingQuestion) {
-      setIsAddingQuestion(true);
-      return;
-    }
+    const uniqueQuestions = _.differenceBy(
+      changeState,
+      questionsOrder,
+      'identifier'
+    );
     setQuestionsOrder([
       ...questionsOrder,
-      ...changeState.map((item) => ({
+      ...uniqueQuestions.map((item) => ({
         identifier: item.identifier,
         description: item.description,
         taxonomy: item.taxonomy,
@@ -243,9 +230,12 @@ const QuestionSetQuestionReorderComponent = ({
         question_body: item.question_body,
       })),
     ]);
-    setIsAddingQuestion(false);
     setChangeState([]);
+    setMountCounter((prev) => prev + 1);
   };
+
+  const enableClassFilter =
+    questionSet?.purpose === QuestionSetPurposeType.MAIN_DIAGNOSTIC;
 
   return (
     <DndContext
@@ -254,24 +244,11 @@ const QuestionSetQuestionReorderComponent = ({
       modifiers={[restrictToVerticalAxis]}
       onDragEnd={onDragEnd}
     >
-      <div className='flex-1 flex flex-col overflow-y-auto pr-3'>
-        <SortableContext
-          items={questionsOrder.map((row) => row.identifier)}
-          strategy={verticalListSortingStrategy}
-        >
-          {questionsOrder.map((question, index) => (
-            <DraggableItem
-              index={index}
-              key={question.identifier}
-              question={question}
-              onRemove={handleRemoveQuestion}
-            />
-          ))}
-        </SortableContext>
-      </div>
-      <div className='flex justify-between my-3 gap-5'>
-        <div className='flex flex-1 overflow-hidden flex-col gap-1'>
+      <div className='flex justify-between mt-3 mb-5 gap-5'>
+        <h1 className='text-2xl font-bold'>Questions</h1>
+        <div className='flex flex-1 overflow-hidden flex-col gap-1 max-w-[350px]'>
           <InfiniteSelect
+            key={mountCounter}
             isLoading={isLoadingQuestions}
             onChange={setChangeState}
             data={result}
@@ -282,7 +259,9 @@ const QuestionSetQuestionReorderComponent = ({
                   l1_skill_id: questionSet.taxonomy.l1_skill.identifier,
                   repository_id: questionSet.repository.identifier,
                   board_id: questionSet.taxonomy.board.identifier,
-                  class_id: questionSet.taxonomy.class.identifier,
+                  class_id: enableClassFilter
+                    ? filterState.class_id
+                    : questionSet.taxonomy.class.identifier,
 
                   page_no: values.page_no,
 
@@ -297,7 +276,7 @@ const QuestionSetQuestionReorderComponent = ({
             multiple
           />
         </div>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-5'>
           <Filter
             className='h-6 w-6 fill-primary/70 hover:fill-primary text-primary/50 cursor-pointer'
             onClick={() =>
@@ -307,8 +286,8 @@ const QuestionSetQuestionReorderComponent = ({
           <Button
             variant='outline'
             onClick={() => {
-              setIsAddingQuestion(false);
               setChangeState([]);
+              setMountCounter((prev) => prev + 1);
             }}
             disabled={!changeState.length}
           >
@@ -322,11 +301,32 @@ const QuestionSetQuestionReorderComponent = ({
           </Button>
         </div>
       </div>
+      <div className='flex-1 flex flex-col overflow-y-auto pr-3'>
+        {questionsOrder.length === 0 && (
+          <div className='text-lg font-bold h-full flex items-center justify-center'>
+            No questions added yet.
+          </div>
+        )}
+        <SortableContext
+          items={questionsOrder.map((row) => row.identifier)}
+          strategy={verticalListSortingStrategy}
+        >
+          {questionsOrder.map((question, index) => (
+            <DraggableItem
+              index={index}
+              key={question.identifier}
+              question={question}
+              onRemove={handleRemoveQuestion}
+            />
+          ))}
+        </SortableContext>
+      </div>
       <QuestionSetReorderQuestionFilterComponent
         open={openDialog.open && openDialog.dialog === DialogTypes.FILTER}
         onClose={() => setOpenDialog({ open: false, dialog: null })}
         filterState={filterState}
         setFilterState={setFilterState}
+        enableClassFilter={enableClassFilter}
       />
     </DndContext>
   );

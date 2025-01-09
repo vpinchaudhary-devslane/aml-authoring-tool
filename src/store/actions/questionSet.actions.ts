@@ -87,3 +87,13 @@ export const updateQuestionSetCompletedAction = (payload: any) => ({
   type: QuestionSetActionType.UPDATE_QUESTION_SET_COMPLETED,
   payload,
 });
+
+export const publishQuestionSetAction = (questionSetId: string) => ({
+  type: QuestionSetActionType.PUBLISH_QUESTION_SET,
+  payload: { questionSetId },
+});
+
+export const publishQuestionSetCompletedAction = (payload: any) => ({
+  type: QuestionSetActionType.PUBLISH_QUESTION_SET_COMPLETED,
+  payload,
+});
