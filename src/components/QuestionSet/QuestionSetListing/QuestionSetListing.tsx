@@ -13,17 +13,13 @@ import {
   questionSetsSelector,
 } from '@/store/selectors/questionSet.selector';
 import { CellContext, ColumnDef } from '@tanstack/react-table';
-import { Circle, Filter, Info, Pencil, Plus, Trash } from 'lucide-react';
+import { Circle, Info, Pencil, Plus, Trash } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import AmlListingFilterPopup from '@/shared-resources/AmlListingFilterPopup/AmlListingFilterPopup';
 import QuestionSetDetails from './QuestionSetDetails/QuestionSetDetails';
 import QuestionSetFilters from '../QuestionSetFilters';
 
@@ -110,6 +106,11 @@ const QuestionSetListing = () => {
         header: 'Purpose',
       },
       {
+        accessorKey: 'status',
+        header: 'Status',
+        cellClassName: 'uppercase',
+      },
+      {
         accessorKey: 'enable_feedback',
         header: 'Show Feedback',
         cell: coloredDot,
@@ -154,6 +155,7 @@ const QuestionSetListing = () => {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -169,20 +171,11 @@ const QuestionSetListing = () => {
       <div className='flex items-center justify-between gap-6 mb-4'>
         <h1 className='flex items-center gap-3 text-2xl font-bold'>
           Question Sets
-          <Popover>
-            <PopoverTrigger asChild>
-              <Filter className='fill-primary/30 hover:fill-primary/70 [data-applied=true]:fill-primary text-primary/50' />
-            </PopoverTrigger>
-            <PopoverContent
-              className='w-[600px] max-h-[95%] overflow-y-auto'
-              side='right'
-            >
-              <QuestionSetFilters
-                searchFilters={searchFilters}
-                setSearchFilters={setSearchFilters}
-              />
-            </PopoverContent>
-          </Popover>
+          <AmlListingFilterPopup
+            searchFilters={searchFilters}
+            setSearchFilters={setSearchFilters}
+            Component={QuestionSetFilters}
+          />
         </h1>
         <Button
           onClick={() =>

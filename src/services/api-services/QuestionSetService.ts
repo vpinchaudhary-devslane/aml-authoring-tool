@@ -1,4 +1,6 @@
 import { QuestionSet } from '@/models/entities/QuestionSet';
+import { QuestionSetCreateUpdatePayload } from '@/components/QuestionSet/QuestionSetListing/QuestionSetDetails/QuestionSetDetails';
+import { Board } from '@/models/entities/Board';
 import { baseApiService } from './BaseApiService';
 
 class QuestionSetService {
@@ -8,7 +10,8 @@ class QuestionSetService {
 
   async getList(data: {
     filters: {
-      title?: string[];
+      search_query?: string;
+      status?: string;
       repository_id?: string;
       board_id?: string;
       class_id?: string;
@@ -21,6 +24,7 @@ class QuestionSetService {
     offset?: number;
   }): Promise<{
     result: {
+      boards: Board[];
       question_sets: QuestionSet[];
       meta: {
         offset: number;
@@ -46,6 +50,28 @@ class QuestionSetService {
 
   async getById(id: string) {
     return baseApiService.get(`/api/v1/question-set/read/${id}`);
+  }
+
+  async create(questionSet: QuestionSetCreateUpdatePayload) {
+    return baseApiService.post(
+      `/api/v1/question-set/create`,
+      'api.questionSet.create',
+      questionSet
+    );
+  }
+
+  async update({
+    questionSetId,
+    data,
+  }: {
+    questionSetId: string;
+    data: Partial<QuestionSetCreateUpdatePayload>;
+  }) {
+    return baseApiService.post(
+      `/api/v1/question-set/update/${questionSetId}`,
+      'api.questionSet.update',
+      data
+    );
   }
 }
 

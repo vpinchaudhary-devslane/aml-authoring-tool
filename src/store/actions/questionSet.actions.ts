@@ -64,3 +64,26 @@ export const getQuestionSetErrorAction = (message: string) => ({
   type: QuestionSetActionType.GET_QUESTION_SET_ERROR,
   payload: message,
 });
+
+export const createQuestionSetAction = (payload: any) => ({
+  type: QuestionSetActionType.CREATE_QUESTION_SET,
+  payload,
+});
+
+export const createQuestionSetCompletedAction = (payload: any) => ({
+  type: QuestionSetActionType.CREATE_QUESTION_SET_COMPLETED,
+  payload,
+});
+
+export const updateQuestionSetAction = (payload: {
+  questionSetId: string;
+  data: any;
+}) => ({
+  type: QuestionSetActionType.UPDATE_QUESTION_SET,
+  payload,
+});
+
+export const updateQuestionSetCompletedAction = (payload: any) => ({
+  type: QuestionSetActionType.UPDATE_QUESTION_SET_COMPLETED,
+  payload,
+});

@@ -26,6 +26,9 @@ import { Formik } from 'formik';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import FormikInput from '@/shared-resources/FormikInput/FormikInput';
+import { PopoverClose } from '@radix-ui/react-popover';
+import * as _ from 'lodash';
+import { createEntitySelectorFactory } from '@/store/selectors/root.selectors';
 import { Button } from '../ui/button';
 
 type QuestionSetFiltersProps = {
@@ -54,6 +57,22 @@ const QuestionSetFilters = ({
   const isLoadingClass = useSelector(isLoadingClassesSelector);
   const isLoadingSkill = useSelector(isLoadingSkillsSelector);
 
+  const selectedL1Skill = useSelector(
+    createEntitySelectorFactory('skill', searchFilters.l1_skill_id)
+  );
+  const selectedL2Skill = useSelector(
+    createEntitySelectorFactory('skill', searchFilters.l2_skill_id)
+  );
+  const selectedBoard = useSelector(
+    createEntitySelectorFactory('board', searchFilters.board_id)
+  );
+  const selectedRepository = useSelector(
+    createEntitySelectorFactory('repository', searchFilters.repository_id)
+  );
+  const selectedClass = useSelector(
+    createEntitySelectorFactory('class', searchFilters.class_id)
+  );
+
   return (
     <Formik
       initialValues={{
@@ -67,7 +86,7 @@ const QuestionSetFilters = ({
       }}
       onSubmit={(values) => {
         setSearchFilters({
-          ...values,
+          ..._.omitBy(values, (v) => !v),
           page_no: 1,
         });
       }}
@@ -101,6 +120,7 @@ const QuestionSetFilters = ({
               }
               isLoading={isLoadingBoard}
               totalCount={boardsCount}
+              preLoadedOptions={[selectedBoard]}
             />
             <FormikInfiniteSelect
               name='repository_id'
@@ -119,6 +139,7 @@ const QuestionSetFilters = ({
               }
               isLoading={isLoadingRepository}
               totalCount={repositoriesCount}
+              preLoadedOptions={[selectedRepository]}
             />
           </div>
           <div className='flex w-full gap-6 items-start'>
@@ -139,6 +160,7 @@ const QuestionSetFilters = ({
               }
               isLoading={isLoadingClass}
               totalCount={classesCount}
+              preLoadedOptions={[selectedClass]}
             />
             <FormikInfiniteSelect
               name='l1_skill_id'
@@ -158,6 +180,7 @@ const QuestionSetFilters = ({
               }
               isLoading={isLoadingSkill}
               totalCount={l1SkillsCount}
+              preLoadedOptions={[selectedL1Skill]}
             />
           </div>
           <div className='flex w-full gap-6 items-start'>
@@ -179,20 +202,38 @@ const QuestionSetFilters = ({
               }
               isLoading={isLoadingSkills}
               totalCount={l2SkillsCount}
+              preLoadedOptions={[selectedL2Skill]}
             />
             <FormikSelect
               name='status'
               label='Status'
               placeholder='Select status'
               options={['LIVE', 'DRAFT'].map((status) => ({
-                value: status,
+                value: status.toLowerCase(),
                 label: status,
               }))}
+              renderValue={(status) => (status as string)?.toUpperCase()}
             />
           </div>
-          <div className='flex gap-3 justify-end'>
-            <Button type='submit'>Apply</Button>
-            <Button variant='outline'>Reset</Button>
+          <div className='flex justify-end'>
+            <PopoverClose asChild>
+              <div className='w-min flex gap-3'>
+                <Button type='submit' disabled={!formik.dirty}>
+                  Apply
+                </Button>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    setSearchFilters({
+                      page_no: 1,
+                    });
+                  }}
+                >
+                  Reset
+                </Button>
+              </div>
+            </PopoverClose>
           </div>
         </form>
       )}

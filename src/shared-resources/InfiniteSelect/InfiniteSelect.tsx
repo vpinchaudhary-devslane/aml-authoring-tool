@@ -64,7 +64,7 @@ export const InfiniteSelect = ({
         (option: any) => {
           const itemLabel = _.get(option, labelKey ?? '');
 
-          if (itemLabel.includes(searchFilters.value)) return true;
+          if (itemLabel?.includes(searchFilters.value)) return true;
           return false;
         }
       );

@@ -29,6 +29,7 @@ export interface QuestionSet {
 export interface Description {
   en: string;
   kn?: string;
+  hi?: string;
 }
 export interface Repository {
   identifier: string;
