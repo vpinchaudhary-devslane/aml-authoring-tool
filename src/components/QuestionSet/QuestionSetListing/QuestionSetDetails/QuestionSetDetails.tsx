@@ -3,10 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { QuestionSetPurposeType } from '@/enums/questionSet.enum';
 import { Board } from '@/models/entities/Board';
-import { SupportedLanguages } from '@/models/enums/SupportedLanguages.enum';
+import {
+  SupportedLanguages,
+  SupportedLanguagesLabel,
+} from '@/models/enums/SupportedLanguages.enum';
 import FormikSelect from '@/shared-resources/FormikSelect/FormikSelect';
 import {
   boardSelector,
+  getAllBoardsSelector,
   isLoadingBoardsSelector,
 } from '@/store/selectors/board.selector';
 import {
@@ -23,10 +27,9 @@ import {
   l2SkillSelector,
   l3SkillSelector,
 } from '@/store/selectors/skill.selector';
-import { subSkillsSelector } from '@/store/selectors/subskill.selector';
 import { Formik } from 'formik';
-import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 import MultiLangFormikInput from '@/shared-resources/MultiLangFormikInput/MultiLangFormikInput';
 import { getListSkillAction } from '@/store/actions/skill.action';
@@ -35,52 +38,68 @@ import FormikInfiniteSelect from '@/shared-resources/FormikSelect/FormikInfinite
 import { getListBoardAction } from '@/store/actions/board.action';
 import { getListRepositoryAction } from '@/store/actions/repository.action';
 import { getListClassAction } from '@/store/actions/class.action';
-import { getListSubSkillAction } from '@/store/actions/subSkill.action';
 import FormikInput from '@/shared-resources/FormikInput/FormikInput';
-import { allQuestionSetsSelector } from '@/store/selectors/questionSet.selector';
+import {
+  allQuestionSetsSelector,
+  isQuestionSetActionInProgressSelector,
+} from '@/store/selectors/questionSet.selector';
+import { Description } from '@/models/entities/Question';
+import {
+  createQuestionSetAction,
+  updateQuestionSetAction,
+} from '@/store/actions/questionSet.actions';
+import { cn } from '@/lib/utils';
 
 type QuestionSetDetailsProps = {
   onClose: () => void;
   questionSetId: string | null;
 };
 
+const getMultiLangFormikInitialValues = (data: Description) => {
+  const res = {} as Description;
+  Object.values(SupportedLanguages).forEach((lang) => {
+    res[lang] = data?.[lang] ?? '';
+  });
+  return res;
+};
+
+export type QuestionSetCreateUpdatePayload = {
+  title: Description;
+  description: Description;
+  instruction_text: Description;
+  repository_id: string;
+  sequence: number;
+  board_id: string;
+  class_id: string;
+  l1_skill_id: string;
+  l2_skill_ids?: string[];
+  l3_skill_ids?: string[];
+  sub_skill_ids?: string[];
+  purpose: string;
+  is_atomic: boolean;
+  enable_feedback: boolean;
+  questions: { identifier: string; sequence: number }[];
+  gradient?: string;
+  group_name?: number;
+};
+
 const QuestionSetDetails = ({
   onClose,
   questionSetId,
 }: QuestionSetDetailsProps) => {
+  const dispatch = useDispatch();
   const questionSets = useSelector(allQuestionSetsSelector);
+  const isActionInProgress = useSelector(isQuestionSetActionInProgressSelector);
   const questionSet = questionSets[questionSetId!];
 
-  const initialValues = {
-    // Base
-    repository: questionSet?.repository?.identifier ?? '',
-    board: questionSet?.taxonomy?.board?.identifier ?? '',
-    class: questionSet?.taxonomy?.class?.identifier ?? '',
-    l1_skill: questionSet?.taxonomy?.l1_skill?.identifier ?? '',
-    l2_skills: questionSet?.taxonomy?.l2_skill?.map(
-      (skill) => skill.identifier
-    ),
-    l3_skills: questionSet?.taxonomy?.l3_skill?.map(
-      (skill) => skill.identifier
-    ),
-    sub_skills: questionSet?.sub_skills?.map((skill) => skill.identifier),
-    content_ids: questionSet?.content_ids ?? [],
-    purpose: questionSet?.purpose ?? '',
+  const preSelectedBoards = useSelector(
+    getAllBoardsSelector([questionSet?.taxonomy?.board?.identifier])
+  );
 
-    // Multi-lang
-    title: questionSet?.title ?? {},
-    description: questionSet?.description ?? {},
-    instruction_text: questionSet?.instruction_text ?? {},
-
-    // other
-    enable_feedback: questionSet?.enable_feedback,
-    is_atomic: questionSet?.is_atomic,
-    sequence: questionSet?.sequence,
-    gradient: questionSet?.gradient,
-    group_name: questionSet?.group_name,
-  };
-
-  const [selectedBoard, setSelectedBoard] = React.useState<Board>();
+  const [selectedBoard, setSelectedBoard] = React.useState<Board | undefined>(
+    preSelectedBoards.length ? preSelectedBoards[0] : undefined
+  );
+  const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
 
   const { result: repositories, totalCount: repositoriesCount } =
     useSelector(repositoriesSelector);
@@ -94,15 +113,12 @@ const QuestionSetDetails = ({
     useSelector(l2SkillSelector);
   const { result: l3Skills, totalCount: l3SkillsCount } =
     useSelector(l3SkillSelector);
-  const { result: subSkills, totalCount: subSkillsCount } =
-    useSelector(subSkillsSelector);
 
   const isLoadingSkills = useSelector(isLoadingSkillsSelector);
   const isLoadingBoard = useSelector(isLoadingBoardsSelector);
   const isLoadingRepository = useSelector(isLoadingRepositoriesSelector);
   const isLoadingClass = useSelector(isLoadingClassesSelector);
   const isLoadingSkill = useSelector(isLoadingSkillsSelector);
-  const isLoadingSubSkill = useSelector(isLoadingSkillsSelector);
 
   const supportedLanguages = useMemo(() => {
     const res = {} as { [k: string]: boolean };
@@ -123,45 +139,104 @@ const QuestionSetDetails = ({
     return res;
   }, [selectedBoard]);
 
-  // TODO: Add proper validation
+  const multiLanguageSchemaObject = (label: string) =>
+    Object.values(SupportedLanguages).reduce((schema, lang) => {
+      if (supportedLanguages[lang]) {
+        schema[lang] = yup
+          .string()
+          .required()
+          .label(`${SupportedLanguagesLabel[lang]} ${label}`);
+      } else {
+        schema[lang] = yup
+          .string()
+          .label(`${SupportedLanguagesLabel[lang]} ${label}`);
+      }
+      return schema;
+    }, {} as Record<SupportedLanguages, yup.StringSchema>);
+
   const validationSchema = yup.object().shape({
-    // title: yup.string().required().label('Title'),
-    // description: yup.string().required().label('Description'),
-    // purpose: yup
-    //   .string()
-    //   .required()
-    //   .oneOf(Object.values(QuestionSetPurposeType))
-    //   .label('Purpose'),
+    title: yup.object().shape(multiLanguageSchemaObject('Title')),
+    description: yup.object().shape(multiLanguageSchemaObject('Description')),
+    instruction_text: yup.string().required().label('Instruction Text'),
+    repository_id: yup.string().required().label('Repository'),
+    board_id: yup.string().required().label('Board'),
+    class_id: yup.string().required().label('Class'),
+    l1_skill_id: yup.string().required().label('L1 Skill'),
+    sequence: yup.number().required().label('Sequence'),
+    purpose: yup
+      .string()
+      .required()
+      .oneOf(Object.values(QuestionSetPurposeType))
+      .label('Purpose'),
   });
+
+  useEffect(() => {
+    if (!isActionInProgress && isFormSubmitted) {
+      setIsFormSubmitted(false);
+      onClose();
+    }
+  }, [isFormSubmitted, isActionInProgress, onClose]);
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{
+        // Base
+        repository_id: questionSet?.repository?.identifier ?? '',
+        board_id: questionSet?.taxonomy?.board?.identifier ?? '',
+        class_id: questionSet?.taxonomy?.class?.identifier ?? '',
+        l1_skill_id: questionSet?.taxonomy?.l1_skill?.identifier ?? '',
+        l2_skill_ids: questionSet?.taxonomy?.l2_skill?.map(
+          (skill) => skill.identifier
+        ),
+        l3_skill_ids: questionSet?.taxonomy?.l3_skill?.map(
+          (skill) => skill.identifier
+        ),
+        content_ids: questionSet?.content_ids ?? [],
+        purpose: questionSet?.purpose ?? '',
+
+        // Multi-lang
+        title: getMultiLangFormikInitialValues(questionSet?.title),
+        description: getMultiLangFormikInitialValues(questionSet?.description),
+        instruction_text: questionSet?.instruction_text ?? '',
+
+        // other
+        enable_feedback:
+          questionSet?.purpose !== QuestionSetPurposeType.MAIN_DIAGNOSTIC &&
+          questionSet?.enable_feedback,
+        is_atomic: questionSet?.is_atomic,
+        sequence: questionSet?.sequence,
+      }}
       validationSchema={validationSchema}
       onSubmit={(values) => {
+        setIsFormSubmitted(true);
         const payload = {
           title: values.title,
           description: values.description,
           instruction_text: values.instruction_text,
-          repository_id: values.repository,
-          board_id: values.board,
-          class_id: values.class,
-          tenant_id: '',
-          content_ids: [],
-          questions: [],
-          l1_skill_id: values.l1_skill,
-          l2_skill_ids: values.l2_skills,
-          l3_skill_ids: values.l3_skills,
-          sub_skill_ids: values.sub_skills,
-          sequence: values.sequence,
+          repository_id: values.repository_id,
+          board_id: values.board_id,
+          class_id: values.class_id,
+          l1_skill_id: values.l1_skill_id,
+          l2_skill_ids: values.l2_skill_ids,
+          l3_skill_ids: values.l3_skill_ids,
+          sequence: parseInt(values.sequence?.toString() ?? '0', 10),
           purpose: values.purpose,
-          enable_feedback: Boolean(values.enable_feedback),
-          is_atomic: Boolean(values.is_atomic),
-          gradient: values.gradient,
-          group_name: values.group_name,
+          enable_feedback: Boolean(
+            values?.purpose !== QuestionSetPurposeType.MAIN_DIAGNOSTIC &&
+              values?.enable_feedback
+          ),
         };
 
-        console.log(payload);
+        if (questionSet) {
+          dispatch(
+            updateQuestionSetAction({
+              questionSetId: questionSet.identifier,
+              data: payload,
+            })
+          );
+        } else {
+          dispatch(createQuestionSetAction(payload));
+        }
       }}
     >
       {(formik) => (
@@ -170,11 +245,11 @@ const QuestionSetDetails = ({
           className='flex flex-col overflow-x-hidden px-1'
         >
           <p className='text-2xl font-bold mb-8'>
-            {questionSetId ? 'Edit' : 'New'}
+            {questionSetId ? 'Update - Question Set' : 'Create - Question Set'}
           </p>
           <div className='flex w-full gap-6 items-start'>
             <FormikInfiniteSelect
-              name='board'
+              name='board_id'
               label='Board'
               placeholder='Select Board'
               data={boards}
@@ -191,11 +266,11 @@ const QuestionSetDetails = ({
               isLoading={isLoadingBoard}
               totalCount={boardsCount}
               onValueChange={(value) => setSelectedBoard(value)}
-              preLoadedOptions={[questionSet?.taxonomy?.board]}
+              preLoadedOptions={preSelectedBoards}
               required
             />
             <FormikInfiniteSelect
-              name='repository'
+              name='repository_id'
               label='Repository'
               placeholder='Select Repository'
               data={repositories}
@@ -217,7 +292,7 @@ const QuestionSetDetails = ({
           </div>
           <div className='flex w-full gap-6 items-start'>
             <FormikInfiniteSelect
-              name='class'
+              name='class_id'
               label='Class'
               placeholder='Select Class'
               data={classes}
@@ -237,7 +312,7 @@ const QuestionSetDetails = ({
               required
             />
             <FormikInfiniteSelect
-              name='l1_skill'
+              name='l1_skill_id'
               label='L1 Skill'
               placeholder='Select L1 skill'
               data={l1Skills}
@@ -260,7 +335,7 @@ const QuestionSetDetails = ({
           </div>
           <div className='flex w-full gap-6 items-start'>
             <FormikInfiniteSelect
-              name='l2_skills'
+              name='l2_skill_ids'
               label='L2 Skill'
               placeholder='Select L2 skills'
               data={l2Skills}
@@ -279,10 +354,9 @@ const QuestionSetDetails = ({
               totalCount={l2SkillsCount}
               preLoadedOptions={questionSet?.taxonomy?.l2_skill}
               multiple
-              required
             />
             <FormikInfiniteSelect
-              name='l3_skills'
+              name='l3_skill_ids'
               label='L3 Skill'
               placeholder='Select L3 skills'
               data={l3Skills}
@@ -301,31 +375,9 @@ const QuestionSetDetails = ({
               totalCount={l3SkillsCount}
               preLoadedOptions={questionSet?.taxonomy?.l3_skill}
               multiple
-              required
             />
           </div>
-          <div className='flex w-full gap-6 items-start'>
-            <FormikInfiniteSelect
-              name='sub_skills'
-              label='Sub Skills'
-              placeholder='Select sub-skills'
-              data={subSkills}
-              labelKey='name.en'
-              valueKey='identifier'
-              dispatchAction={(payload) =>
-                getListSubSkillAction({
-                  filters: {
-                    search_query: payload.value,
-                    page_no: payload.page_no,
-                  },
-                })
-              }
-              isLoading={isLoadingSubSkill}
-              totalCount={subSkillsCount}
-              preLoadedOptions={questionSet?.sub_skills}
-              multiple
-              required
-            />
+          <div className='flex w-full [&_>_div]:flex-1 gap-6 items-start'>
             <FormikSelect
               name='purpose'
               label='Purpose'
@@ -334,6 +386,13 @@ const QuestionSetDetails = ({
                 value: purpose,
                 label: purpose,
               }))}
+              required
+            />
+            <FormikInput
+              name='sequence'
+              label='Sequence'
+              type='number'
+              placeholder='Sequence'
               required
             />
           </div>
@@ -347,58 +406,51 @@ const QuestionSetDetails = ({
             label='Description'
             supportedLanguages={supportedLanguages}
           />
-          <MultiLangFormikInput
+          <FormikInput
             name='instruction_text'
-            label='Description'
-            supportedLanguages={supportedLanguages}
+            label='Instruction Text'
+            placeholder='Instruction Text'
+            required
           />
-          <div className='flex w-full gap-6 items-start'>
-            <FormikInput
-              name='sequence'
-              label='Sequence'
-              type='number'
-              placeholder='Sequence'
-              required
-            />
-            <FormikInput
-              name='gradient'
-              label='Gradient'
-              placeholder='Gradient'
-              required
-            />
-            <FormikInput
-              name='group_name'
-              label='Group Name'
-              type='number'
-              placeholder='Group Name'
-              required
-            />
-          </div>
           <div className='flex gap-6 items-start my-3'>
             <label className='font-medium text-sm flex gap-3 items-center'>
               <Switch
-                checked={formik.values.enable_feedback}
+                checked={
+                  formik.values.purpose !==
+                    QuestionSetPurposeType.MAIN_DIAGNOSTIC &&
+                  formik.values.enable_feedback
+                }
                 onCheckedChange={(checked) =>
                   formik.setFieldValue('enable_feedback', checked)
                 }
-              />
-              Enable Feedback
-            </label>
-            <label className='font-medium text-sm flex gap-3 items-center'>
-              <Switch
-                checked={formik.values.is_atomic}
-                onCheckedChange={(checked) =>
-                  formik.setFieldValue('is_atomic', checked)
+                disabled={
+                  !formik.values.purpose ||
+                  formik.values.purpose ===
+                    QuestionSetPurposeType.MAIN_DIAGNOSTIC
                 }
               />
-              Is Atomic
+              <span
+                className={cn(
+                  (!formik.values.purpose ||
+                    formik.values.purpose ===
+                      QuestionSetPurposeType.MAIN_DIAGNOSTIC) &&
+                    'text-disabled'
+                )}
+              >
+                Enable Feedback
+              </span>
             </label>
           </div>
           <div className='flex gap-5 mt-5'>
             <Button type='submit' size='lg'>
               Save
             </Button>
-            <Button variant='outline' onClick={onClose} size='lg'>
+            <Button
+              variant='outline'
+              onClick={onClose}
+              size='lg'
+              disabled={isFormSubmitted}
+            >
               Cancel
             </Button>
           </div>

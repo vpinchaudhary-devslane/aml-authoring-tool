@@ -11,6 +11,8 @@ export type QuestionSetState = QuestionSetActionPayloadType & {
   latestCount: number;
   entities: Record<string, QuestionSet>;
   cachedData: CacheAPIResponse;
+
+  actionInProgress: boolean;
 };
 
 const initialState: QuestionSetState = {
@@ -21,6 +23,8 @@ const initialState: QuestionSetState = {
   entities: {},
   latestCount: 0,
   cachedData: {},
+
+  actionInProgress: false,
 };
 
 export const questionSetReducer = (
@@ -60,7 +64,15 @@ export const questionSetReducer = (
         draft.error = action.payload;
         break;
 
+      case QuestionSetActionType.CREATE_QUESTION_SET:
+      case QuestionSetActionType.UPDATE_QUESTION_SET:
+        draft.actionInProgress = true;
+        break;
+
       case QuestionSetActionType.DELETE_QUESTION_SET_COMPLETED:
+      case QuestionSetActionType.CREATE_QUESTION_SET_COMPLETED:
+      case QuestionSetActionType.UPDATE_QUESTION_SET_COMPLETED:
+        draft.actionInProgress = false;
         draft.entities = {};
         draft.cachedData = {};
         break;

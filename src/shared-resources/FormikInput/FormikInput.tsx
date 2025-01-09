@@ -29,6 +29,7 @@ const FormikInput: React.FC<FormikInputProps> = (props) => {
         placeholder={label}
         hasError={Boolean(touched && error)}
         {...props}
+        required={false}
       />
       <ErrorMessage
         className='text-red-500 mt-2 text-sm'

@@ -23,6 +23,12 @@ export enum QuestionSetActionType {
   GET_QUESTION_SET = 'questionSet/get',
   GET_QUESTION_SET_COMPLETED = 'questionSet/get/completed',
   GET_QUESTION_SET_ERROR = 'questionSet/get/error',
+
+  CREATE_QUESTION_SET = 'questionSet/create',
+  CREATE_QUESTION_SET_COMPLETED = 'questionSet/create/completed',
+
+  UPDATE_QUESTION_SET = 'questionSet/update',
+  UPDATE_QUESTION_SET_COMPLETED = 'questionSet/update/completed',
 }
 
 // questions

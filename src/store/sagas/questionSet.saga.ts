@@ -3,7 +3,9 @@ import { all, call, put, select, takeLatest } from 'redux-saga/effects';
 import { questionSetService } from '@/services/api-services/QuestionSetService';
 import { PaginationLimit } from '@/enums/tableEnums';
 import { toastService } from '@/services/ToastService';
+import { QuestionSetCreateUpdatePayload } from '@/components/QuestionSet/QuestionSetListing/QuestionSetDetails/QuestionSetDetails';
 import {
+  createQuestionSetCompletedAction,
   deleteQuestionSetCompletedAction,
   getListQuestionSetAction,
   getListQuestionSetCompletedAction,
@@ -11,12 +13,25 @@ import {
   getQuestionSetCompletedAction,
   getQuestionSetErrorAction,
   QuestionSetActionPayloadType,
+  updateQuestionSetCompletedAction,
 } from '../actions/questionSet.actions';
 import { QuestionSetActionType } from '../actions/actions.constants';
 import { AppState } from '../reducers';
+import { getListBoardCompletedAction } from '../actions/board.action';
 
 interface QuestionSetSagaPayloadType extends SagaPayloadType {
   payload: QuestionSetActionPayloadType;
+}
+
+interface CreateQuestionSetPayloadType extends SagaPayloadType {
+  payload: QuestionSetCreateUpdatePayload;
+}
+
+interface UpdateQuestionSetPayloadType extends SagaPayloadType {
+  payload: {
+    questionSetId: string;
+    data: Partial<QuestionSetCreateUpdatePayload>;
+  };
 }
 
 interface DeleteQuestionSetSagaPayloadType extends SagaPayloadType {
@@ -58,6 +73,12 @@ function* getListQuestionSetSaga(data: QuestionSetSagaPayloadType): any {
       getListQuestionSetCompletedAction({
         questionSets: response.result.question_sets,
         totalCount: response.result.meta.total,
+      })
+    );
+    yield put(
+      getListBoardCompletedAction({
+        boards: response.result.boards,
+        totalCount: response.result.boards.length,
       })
     );
   } catch (e: any) {
@@ -109,6 +130,45 @@ function* getQuestionSetSaga(data: any): any {
   }
 }
 
+function* createQuestionSetSaga(data: CreateQuestionSetPayloadType): any {
+  try {
+    const filters: QuestionSetActionPayloadType['filters'] = yield select(
+      (state: AppState) => state.questionSet.filters
+    );
+    const response = yield call(questionSetService.create, data.payload);
+    yield put(createQuestionSetCompletedAction(response));
+
+    toastService.showSuccess('Question Set created successfully');
+    yield put(
+      getListQuestionSetAction({
+        filters,
+      })
+    );
+  } catch (e: any) {
+    toastService.showError((e?.errors && e.errors[0]?.message) || e?.message);
+  }
+}
+
+function* updateQuestionSetSaga(data: UpdateQuestionSetPayloadType): any {
+  try {
+    const filters: QuestionSetActionPayloadType['filters'] = yield select(
+      (state: AppState) => state.questionSet.filters
+    );
+
+    const response = yield call(questionSetService.update, data.payload);
+    yield put(updateQuestionSetCompletedAction(response));
+
+    toastService.showSuccess('Question Set updated successfully');
+    yield put(
+      getListQuestionSetAction({
+        filters,
+      })
+    );
+  } catch (e: any) {
+    toastService.showError((e?.errors && e.errors[0]?.message) || e?.message);
+  }
+}
+
 function* questionSetSaga() {
   yield all([
     takeLatest(QuestionSetActionType.GET_LIST, getListQuestionSetSaga),
@@ -117,6 +177,14 @@ function* questionSetSaga() {
       deleteQuestionSetSaga
     ),
     takeLatest(QuestionSetActionType.GET_QUESTION_SET, getQuestionSetSaga),
+    takeLatest(
+      QuestionSetActionType.CREATE_QUESTION_SET,
+      createQuestionSetSaga
+    ),
+    takeLatest(
+      QuestionSetActionType.UPDATE_QUESTION_SET,
+      updateQuestionSetSaga
+    ),
   ]);
 }
 

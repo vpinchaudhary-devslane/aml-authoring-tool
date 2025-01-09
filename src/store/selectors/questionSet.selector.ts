@@ -38,3 +38,8 @@ export const allQuestionSetsSelector = createSelector(
   [selectQuestionSetState],
   (state: QuestionSetState) => state.entities
 );
+
+export const isQuestionSetActionInProgressSelector = createSelector(
+  [selectQuestionSetState],
+  (state: QuestionSetState) => state.actionInProgress
+);

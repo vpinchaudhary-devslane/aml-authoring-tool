@@ -24,3 +24,15 @@ export const isLoadingBoardsSelector = createSelector(
   [boardState],
   (state: BoardState) => state.isLoading
 );
+
+export const getAllBoardsSelector = (ids: string[]) =>
+  createSelector([boardState], (state: BoardState) => {
+    const result: BoardState['entities'][string][] = [];
+    ids.forEach((id) => {
+      const data = state.entities[id] as BoardState['entities'][string];
+      if (data) {
+        result.push(data);
+      }
+    });
+    return result;
+  });
