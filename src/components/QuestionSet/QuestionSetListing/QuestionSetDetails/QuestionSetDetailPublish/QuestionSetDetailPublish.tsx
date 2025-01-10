@@ -9,7 +9,10 @@ import {
   updateQuestionSetAction,
 } from '@/store/actions/questionSet.actions';
 import { QuestionOrderType } from '@/lib/utils';
+import { Plus } from 'lucide-react';
+import QuestionSetContentUploadForm from '@/components/QuestionSetContentUploadForm/QuestionSetContentUploadForm';
 import QuestionSetQuestionReorderComponent from './QuestionSetQuestionReorderComponent';
+import QuestionSetDetailContent from '../QuestionSetDetailContent/QuestionSetDetailContent';
 
 type QuestionSetDetailPublishProps = {
   questionSet: QuestionSet;
@@ -31,6 +34,7 @@ const QuestionSetDetailPublish = ({
   );
 
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
+  const [isNewUpload, setIsNewUpload] = useState(false);
 
   const isActionInProgress = useSelector(isQuestionSetActionInProgressSelector);
 
@@ -134,8 +138,15 @@ const QuestionSetDetailPublish = ({
           </div>
           <div className='h-0.5 my-5 bg-slate-400 w-full' />
           <div>
-            <h1 className='text-2xl font-bold mb-5'>Question Set - Content</h1>
-            {JSON.stringify(questionSet?.contents)}
+            <h1 className='text-2xl font-bold mb-5 flex justify-between items-center'>
+              Question Set - Content
+              <Button onClick={() => setIsNewUpload(true)}>
+                <Plus /> New
+              </Button>
+            </h1>
+            <QuestionSetDetailContent
+              contentIds={questionSet?.content_ids ?? []}
+            />
           </div>
         </div>
         <div className='w-0.5 bg-slate-400 h-full' />
@@ -175,6 +186,11 @@ const QuestionSetDetailPublish = ({
           Publish
         </Button>
       </div>
+      <QuestionSetContentUploadForm
+        open={isNewUpload}
+        onClose={() => setIsNewUpload(false)}
+        questionSet={questionSet}
+      />
     </div>
   );
 };

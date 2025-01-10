@@ -117,6 +117,7 @@ export class BaseApiService {
     url: string,
     data?: any,
     opts?: {
+      onUploadProgress?: any;
       headers?: AxiosRequestHeaders;
       params?: QueryParams;
       extras?: {
@@ -133,6 +134,7 @@ export class BaseApiService {
         headers: opts?.headers,
         params: opts?.params,
         requestId: opts?.extras?.requestId,
+        onUploadProgress: opts?.onUploadProgress,
       },
       opts?.extras?.useAuth
     );
