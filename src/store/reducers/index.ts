@@ -10,6 +10,8 @@ import { boardReducer } from './board.reducer';
 import { classReducer } from './class.reducer';
 import { skillReducer } from './skill.reducer';
 import { subSkillReducer } from './subSkill.reducer';
+import { contentReducer } from './content.reducer';
+import { mediaReducer } from './media.reducer';
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -21,6 +23,8 @@ const appReducer = combineReducers({
   class: classReducer,
   skill: skillReducer,
   subSkill: subSkillReducer,
+  content: contentReducer,
+  media: mediaReducer,
   navigationReducer,
 });
 

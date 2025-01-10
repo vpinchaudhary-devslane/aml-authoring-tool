@@ -7,6 +7,8 @@ import { boardSaga } from './board.saga';
 import { classSaga } from './class.saga';
 import { skillSaga } from './skill.saga';
 import { subSkillSaga } from './subSkill.saga';
+import { contentSaga } from './content.saga';
+import { mediaSaga } from './media.saga';
 
 export default function* rootSaga() {
   yield all([
@@ -18,5 +20,7 @@ export default function* rootSaga() {
     fork(classSaga),
     fork(skillSaga),
     fork(subSkillSaga),
+    fork(contentSaga),
+    fork(mediaSaga),
   ]);
 }

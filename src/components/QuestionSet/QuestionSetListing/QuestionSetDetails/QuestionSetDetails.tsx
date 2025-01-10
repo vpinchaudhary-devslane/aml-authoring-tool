@@ -3,10 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { QuestionSetPurposeType } from '@/enums/questionSet.enum';
 import { Board } from '@/models/entities/Board';
-import {
-  SupportedLanguages,
-  SupportedLanguagesLabel,
-} from '@/models/enums/SupportedLanguages.enum';
+import { SupportedLanguages } from '@/models/enums/SupportedLanguages.enum';
 import FormikSelect from '@/shared-resources/FormikSelect/FormikSelect';
 import {
   boardSelector,
@@ -28,10 +25,12 @@ import {
   l3SkillSelector,
 } from '@/store/selectors/skill.selector';
 import { Formik } from 'formik';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
-import MultiLangFormikInput from '@/shared-resources/MultiLangFormikInput/MultiLangFormikInput';
+import MultiLangFormikInput, {
+  useMultiLanguage,
+} from '@/shared-resources/MultiLangFormikInput/MultiLangFormikInput';
 import { getListSkillAction } from '@/store/actions/skill.action';
 import { SkillType } from '@/models/enums/skillType.enum';
 import FormikInfiniteSelect from '@/shared-resources/FormikSelect/FormikInfiniteSelect';
@@ -101,6 +100,9 @@ const QuestionSetDetails = ({
   );
   const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
 
+  const { supportedLanguages, multiLanguageSchemaObject } =
+    useMultiLanguage(selectedBoard);
+
   const { result: repositories, totalCount: repositoriesCount } =
     useSelector(repositoriesSelector);
   const { result: boards, totalCount: boardsCount } =
@@ -119,43 +121,9 @@ const QuestionSetDetails = ({
   const isLoadingClass = useSelector(isLoadingClassesSelector);
   const isLoadingSkill = useSelector(isLoadingSkillsSelector);
 
-  const supportedLanguages = useMemo(() => {
-    const res = {} as { [k: string]: boolean };
-    const requiredLangs = Object.keys(selectedBoard?.supported_lang ?? {});
-
-    if (!requiredLangs.includes(SupportedLanguages.EN)) {
-      requiredLangs.unshift(SupportedLanguages.EN);
-    }
-    requiredLangs.forEach((lang) => {
-      res[lang] = true;
-    });
-
-    Object.values(SupportedLanguages).forEach((lang) => {
-      if (!res[lang]) {
-        res[lang] = false;
-      }
-    });
-    return res;
-  }, [selectedBoard]);
-
-  const multiLanguageSchemaObject = (label: string) =>
-    Object.values(SupportedLanguages).reduce((schema, lang) => {
-      if (supportedLanguages[lang]) {
-        schema[lang] = yup
-          .string()
-          .required()
-          .label(`${SupportedLanguagesLabel[lang]} ${label}`);
-      } else {
-        schema[lang] = yup
-          .string()
-          .label(`${SupportedLanguagesLabel[lang]} ${label}`);
-      }
-      return schema;
-    }, {} as Record<SupportedLanguages, yup.StringSchema>);
-
   const validationSchema = yup.object().shape({
-    title: yup.object().shape(multiLanguageSchemaObject('Title')),
-    description: yup.object().shape(multiLanguageSchemaObject('Description')),
+    title: yup.object().shape(multiLanguageSchemaObject('title')),
+    description: yup.object().shape(multiLanguageSchemaObject('description')),
     instruction_text: yup.string().required().label('Instruction Text'),
     repository_id: yup.string().required().label('Repository'),
     board_id: yup.string().required().label('Board'),

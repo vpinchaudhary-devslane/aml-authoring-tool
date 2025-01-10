@@ -2,7 +2,10 @@ import { createSelector } from 'reselect';
 import { AppState } from '../reducers';
 
 export const createEntitiesSelectorFactory = (
-  entityStore: Exclude<keyof AppState, 'user' | 'auth' | 'navigationReducer'>,
+  entityStore: Exclude<
+    keyof AppState,
+    'user' | 'auth' | 'navigationReducer' | 'media'
+  >,
   ids: string[]
 ) =>
   createSelector(
@@ -11,7 +14,10 @@ export const createEntitiesSelectorFactory = (
   );
 
 export const createEntitySelectorFactory = (
-  entityStore: Exclude<keyof AppState, 'user' | 'auth' | 'navigationReducer'>,
+  entityStore: Exclude<
+    keyof AppState,
+    'user' | 'auth' | 'navigationReducer' | 'media'
+  >,
   id: string
 ) =>
   createSelector(

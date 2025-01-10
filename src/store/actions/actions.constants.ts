@@ -78,3 +78,29 @@ export enum SubskillActionType {
   GET_LIST_COMPLETED = 'subskill/getList/completed',
   GET_LIST_ERROR = 'subskill/getList/error',
 }
+
+// contents
+export enum ContentActionType {
+  GET_LIST = 'content/getList',
+  GET_LIST_COMPLETED = 'content/getList/completed',
+  GET_LIST_ERROR = 'content/getList/error',
+
+  GET_BY_ID = 'content/getById',
+  GET_BY_ID_COMPLETED = 'content/getById/completed',
+  GET_BY_ID_ERROR = 'content/getById/error',
+
+  CREATE = 'content/create',
+  CREATE_COMPLETED = 'content/create/completed',
+}
+
+export enum MediaActionType {
+  GET_PRESIGNED_URL = 'media/getPresignedUrl',
+  GET_PRESIGNED_URL_COMPLETED = 'media/getPresignedUrl/completed',
+  GET_PRESIGNED_URL_ERROR = 'media/getPresignedUrl/error',
+
+  UPLOAD = 'media/upload',
+  UPLOAD_COMPLETED = 'media/upload/completed',
+  UPLOAD_ERROR = 'media/upload/error',
+
+  RESET_STATE = 'media/resetState',
+}
