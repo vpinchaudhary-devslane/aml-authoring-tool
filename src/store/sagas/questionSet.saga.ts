@@ -1,5 +1,5 @@
 import { SagaPayloadType } from '@/types/SagaPayload.type';
-import { all, call, put, select, take, takeLatest } from 'redux-saga/effects';
+import { all, call, put, select, takeLatest } from 'redux-saga/effects';
 import { questionSetService } from '@/services/api-services/QuestionSetService';
 import { PaginationLimit } from '@/enums/tableEnums';
 import { toastService } from '@/services/ToastService';
@@ -153,22 +153,10 @@ function* createQuestionSetSaga(data: CreateQuestionSetPayloadType): any {
 
 function* updateQuestionSetSaga(data: UpdateQuestionSetPayloadType): any {
   try {
-    const filters: QuestionSetActionPayloadType['filters'] = yield select(
-      (state: AppState) => state.questionSet.filters
-    );
-
     const response = yield call(questionSetService.update, data.payload);
     yield put(updateQuestionSetCompletedAction(response));
 
     toastService.showSuccess('Question Set updated successfully');
-    yield put(
-      getListQuestionSetAction({
-        filters,
-      })
-    );
-
-    yield take(QuestionSetActionType.GET_LIST_COMPLETED);
-
     yield put(
       getQuestionSetAction({
         id: data.payload?.questionSetId,
@@ -181,10 +169,6 @@ function* updateQuestionSetSaga(data: UpdateQuestionSetPayloadType): any {
 
 function* publishQuestionSetSaga(data: DeleteQuestionSetSagaPayloadType): any {
   try {
-    const filters: QuestionSetActionPayloadType['filters'] = yield select(
-      (state: AppState) => state.questionSet.filters
-    );
-
     const response = yield call(
       questionSetService.publish,
       data.payload?.questionSetId
@@ -192,14 +176,6 @@ function* publishQuestionSetSaga(data: DeleteQuestionSetSagaPayloadType): any {
     yield put(publishQuestionSetCompletedAction(response));
 
     toastService.showSuccess('Question Set published successfully');
-    yield put(
-      getListQuestionSetAction({
-        filters,
-      })
-    );
-
-    yield take(QuestionSetActionType.GET_LIST_COMPLETED);
-
     yield put(
       getQuestionSetAction({
         id: data.payload?.questionSetId,

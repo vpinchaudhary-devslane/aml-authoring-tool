@@ -2,10 +2,13 @@ import { SagaPayloadType } from '@/types/SagaPayload.type';
 import { all, call, put, select, takeLatest } from 'redux-saga/effects';
 import { contentService } from '@/services/api-services/ContentService';
 import { PaginationLimit } from '@/enums/tableEnums';
+import { toastService } from '@/services/ToastService';
 import {
   ContentActionPayloadType,
+  createContentCompletedAction,
   getContentByIdCompletedAction,
   getContentByIdErrorAction,
+  getListContentAction,
   getListContentCompletedAction,
   getListContentErrorAction,
 } from '../actions/content.actions';
@@ -74,24 +77,21 @@ function* getContentByIdSaga(data: any): any {
   }
 }
 
-// function* createContentSaga(data: any): any {
-//   try {
-//     const { content } = data.payload;
-
-//     const response: Awaited<ReturnType<typeof contentService.create>> =
-//       yield call(contentService.create, content);
-//     yield put(createContentCompletedAction(response));
-//   } catch (e: any) {
-//     yield put(
-//       createContentErrorAction((e?.errors && e.errors[0]?.message) || e?.message)
-//     );
-//   }
-// }
+function* createContentSaga(data: any): any {
+  try {
+    const response: Awaited<ReturnType<typeof contentService.create>> =
+      yield call(contentService.create, data.payload);
+    yield put(createContentCompletedAction(response));
+    yield put(getListContentAction({ filters: { page_no: 1 } }));
+  } catch (e: any) {
+    toastService.showError((e?.errors && e.errors[0]?.message) || e?.message);
+  }
+}
 
 export function* contentSaga() {
   yield all([
     takeLatest(ContentActionType.GET_LIST, getListContentSaga),
     takeLatest(ContentActionType.GET_BY_ID, getContentByIdSaga),
-    // takeLatest(ContentActionType.CREATE, createContentSaga),
+    takeLatest(ContentActionType.CREATE, createContentSaga),
   ]);
 }

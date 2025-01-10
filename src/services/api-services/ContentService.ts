@@ -1,3 +1,4 @@
+import { ContentCreateUpdatePayload } from '@/components/QuestionSetContentUploadForm/QuestionSetContentUploadForm';
 import { baseApiService } from './BaseApiService';
 
 class ContentService {
@@ -28,6 +29,14 @@ class ContentService {
 
   async getById(id: string) {
     return baseApiService.get(`/api/v1/content/read/${id}`);
+  }
+
+  async create(content: ContentCreateUpdatePayload) {
+    return baseApiService.post(
+      '/api/v1/content/create',
+      'api.content.create',
+      content
+    );
   }
 }
 
