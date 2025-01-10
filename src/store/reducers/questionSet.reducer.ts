@@ -72,11 +72,14 @@ export const questionSetReducer = (
 
       case QuestionSetActionType.DELETE_QUESTION_SET_COMPLETED:
       case QuestionSetActionType.CREATE_QUESTION_SET_COMPLETED:
-      case QuestionSetActionType.UPDATE_QUESTION_SET_COMPLETED:
-      case QuestionSetActionType.PUBLISH_QUESTION_SET_COMPLETED:
         draft.actionInProgress = false;
         draft.entities = {};
         draft.cachedData = {};
+        break;
+
+      case QuestionSetActionType.UPDATE_QUESTION_SET_COMPLETED:
+      case QuestionSetActionType.PUBLISH_QUESTION_SET_COMPLETED:
+        draft.actionInProgress = false;
         break;
 
       case QuestionSetActionType.GET_QUESTION_SET:

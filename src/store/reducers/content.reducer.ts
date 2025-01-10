@@ -80,8 +80,12 @@ export const contentReducer = (
         break;
 
       case ContentActionType.CREATE:
-      case ContentActionType.CREATE_COMPLETED:
         draft.actionInProgress = true;
+        break;
+      case ContentActionType.CREATE_COMPLETED:
+        draft.actionInProgress = false;
+        draft.cachedData = {};
+        draft.entities = {};
         break;
       default:
         break;

@@ -23,4 +23,5 @@ export type Media = {
   file_name: string;
   mediaType: string;
   mime_type: string;
+  url: string;
 };

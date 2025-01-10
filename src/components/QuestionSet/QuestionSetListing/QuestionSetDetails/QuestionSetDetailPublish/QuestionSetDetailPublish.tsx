@@ -11,8 +11,9 @@ import {
 import { QuestionOrderType } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import QuestionSetContentUploadForm from '@/components/QuestionSetContentUploadForm/QuestionSetContentUploadForm';
+import { resetMediaUploadStateAction } from '@/store/actions/media.actions';
 import QuestionSetQuestionReorderComponent from './QuestionSetQuestionReorderComponent';
-import QuestionSetDetailContent from '../QuestionSetDetailContent/QuestionSetDetailContent';
+import QuestionSetContentComponent from '../QuestionSetDetailContent/QuestionSetContentComponent';
 
 type QuestionSetDetailPublishProps = {
   questionSet: QuestionSet;
@@ -35,6 +36,10 @@ const QuestionSetDetailPublish = ({
 
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const [isNewUpload, setIsNewUpload] = useState(false);
+
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(
+    null
+  );
 
   const isActionInProgress = useSelector(isQuestionSetActionInProgressSelector);
 
@@ -116,6 +121,7 @@ const QuestionSetDetailPublish = ({
             identifier: item.identifier,
             sequence: index + 1,
           })),
+          content_ids: selectedContentId ? [selectedContentId] : [],
         },
       })
     );
@@ -136,16 +142,16 @@ const QuestionSetDetailPublish = ({
               </div>
             ))}
           </div>
-          <div className='h-0.5 my-5 bg-slate-400 w-full' />
           <div>
-            <h1 className='text-2xl font-bold mb-5 flex justify-between items-center'>
+            <h1 className='text-2xl font-bold my-5 flex justify-between items-center'>
               Question Set - Content
               <Button onClick={() => setIsNewUpload(true)}>
                 <Plus /> New
               </Button>
             </h1>
-            <QuestionSetDetailContent
-              contentIds={questionSet?.content_ids ?? []}
+            <QuestionSetContentComponent
+              setSelectedContentId={setSelectedContentId}
+              contentId={questionSet?.content_ids?.[0]}
             />
           </div>
         </div>
@@ -162,7 +168,13 @@ const QuestionSetDetailPublish = ({
         <div className='flex gap-3'>
           <Button
             size='lg'
-            disabled={isActionInProgress || !isOrderUpdated}
+            disabled={
+              isActionInProgress ||
+              !(
+                isOrderUpdated ||
+                questionSet.content_ids?.[0] !== selectedContentId
+              )
+            }
             onClick={handleSaveQuestionSet}
           >
             Save
@@ -188,7 +200,10 @@ const QuestionSetDetailPublish = ({
       </div>
       <QuestionSetContentUploadForm
         open={isNewUpload}
-        onClose={() => setIsNewUpload(false)}
+        onClose={() => {
+          setIsNewUpload(false);
+          dispatch(resetMediaUploadStateAction());
+        }}
         questionSet={questionSet}
       />
     </div>
