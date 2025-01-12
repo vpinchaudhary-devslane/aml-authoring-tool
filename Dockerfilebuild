@@ -1,16 +1,16 @@
-FROM node:alpine as build-stage
+FROM node:22-alpine as build-stage
 
-ARG VITE_REACT_APP_ENV
+ARG APP_ENV
 ARG BE_BASE_URL
 
-ENV VITE_REACT_APP_ENV=${VITE_REACT_APP_ENV}
+ENV VITE_REACT_APP_ENV=${APP_ENV}
 ENV VITE_BE_BASE_URL=${BE_BASE_URL}
 
 RUN echo $VITE_REACT_APP_ENV
 
 WORKDIR /app
 COPY package*.json yarn.lock ./
-RUN yarn install --silent
+RUN yarn install
 COPY . .
 RUN yarn build
 
