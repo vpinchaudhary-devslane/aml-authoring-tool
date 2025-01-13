@@ -50,6 +50,7 @@ function* getListQuestionsSaga(data: QuestionsSagaPayloadType): any {
             .filter(Boolean),
           totalCount: cachedData.totalCount,
           users: cachedData.users,
+          noCache: data.payload.noCache ?? false,
         })
       );
       return;
@@ -66,6 +67,7 @@ function* getListQuestionsSaga(data: QuestionsSagaPayloadType): any {
         questions: response.result.questions,
         totalCount: response.result.meta.total,
         users: response.result.users,
+        noCache: data.payload.noCache ?? false,
       })
     );
   } catch (e: any) {
