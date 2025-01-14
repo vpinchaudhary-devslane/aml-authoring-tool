@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useTable } from '@/hooks/useTable';
 import TableComponent from '@/shared-resources/TableComponent/TableComponent';
-import { ColumnDef } from '@tanstack/react-table';
-import { Loader2, Pencil, Send, Trash } from 'lucide-react';
+import { CellContext, ColumnDef } from '@tanstack/react-table';
+import { Circle, Loader2, Pencil, Send, Trash } from 'lucide-react';
 
 import { Question } from '@/models/entities/Question';
 import {
@@ -10,6 +10,7 @@ import {
   publishQuestionAction,
 } from '@/store/actions/question.action';
 import {
+  isDeletingSelector,
   isLoadingQuestionsSelector,
   isPublishingSelector,
   questionsSelector,
@@ -23,11 +24,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import AmlTooltip from '@/shared-resources/AmlTooltip/AmlTooltip';
 import AmlDialog from '@/shared-resources/AmlDialog/AmlDialog';
 import { useNavigate } from 'react-router-dom';
+import cx from 'classnames';
 
 enum DialogTypes {
   DELETE = 'delete',
   DETAILS = 'details',
 }
+
+const coloredDot = (info: CellContext<Question, unknown>) => {
+  const status = info.getValue();
+  return (
+    <div className='flex items-center justify-center'>
+      <Circle
+        className={cx(
+          `w-4`,
+          status === 'live'
+            ? 'fill-green-500 text-green-500'
+            : 'fill-red-500 text-red-500'
+        )}
+      />
+    </div>
+  );
+};
 
 interface QuestionsListingProps {
   searchFilters?: any;
@@ -40,7 +58,9 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
   const navigate = useNavigate();
   const isQuestionsLoading = useSelector(isLoadingQuestionsSelector);
   const isPublishing = useSelector(isPublishingSelector);
+  const isDeleting = useSelector(isDeletingSelector);
   const [publishingId, setPublishingId] = useState<string>();
+  const [deletingId, setDeletingId] = useState<string>();
   const { result: questions, totalCount } = useSelector(questionsSelector);
   const [openDialog, setOpenDialog] = useState<{
     dialog: DialogTypes | null;
@@ -64,6 +84,11 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
 
   const columns: ColumnDef<Question>[] = useMemo(
     () => [
+      {
+        accessorKey: 'status',
+        header: 'Live',
+        cell: coloredDot,
+      },
       {
         accessorKey: 'taxonomy',
         header: 'Class',
@@ -138,24 +163,30 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
                 onClick={() => navigateToEditQuestion(row.id)}
               />
             </AmlTooltip>
-            <AmlTooltip tooltip='Delete'>
-              <Trash
-                data-disabled={!row.original.is_active}
-                className='h-5 w-5 fill-red-500 hover:text-red-600 text-red-500 cursor-pointer [data-disabled=true]:cursor-not-allowed'
-                onClick={() =>
-                  setOpenDialog({
-                    dialog: DialogTypes.DELETE,
-                    open: true,
-                    questionId: row.id,
-                  })
-                }
-              />
-            </AmlTooltip>
+
+            {isDeleting && row.id === deletingId ? (
+              <Loader2 className='animate-spin' />
+            ) : (
+              <AmlTooltip tooltip='Delete'>
+                <Trash
+                  data-disabled={!row.original.is_active}
+                  className='h-5 w-5 fill-red-500 hover:text-red-600 text-red-500 cursor-pointer [data-disabled=true]:cursor-not-allowed'
+                  onClick={() => {
+                    setOpenDialog({
+                      dialog: DialogTypes.DELETE,
+                      open: true,
+                      questionId: row.id,
+                    });
+                    setDeletingId(row.id);
+                  }}
+                />
+              </AmlTooltip>
+            )}
           </div>
         ),
       },
     ],
-    [isPublishing]
+    [isPublishing, isDeleting]
   );
   const tableInstance = useTable({
     columns,
