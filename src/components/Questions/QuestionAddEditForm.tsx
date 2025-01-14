@@ -368,6 +368,9 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
             value={files}
             setValue={(files) => setFiles(files)}
             category='question'
+            acceptedFiles={{
+              'image/*': [],
+            }}
           />
         )}
       </>
@@ -617,9 +620,9 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
       }}
     >
       {(formik) => (
-        <Form className='flex flex-col overflow-x-hidden px-1'>
+        <Form className='flex flex-1 flex-col overflow-x-hidden px-1'>
           {/* Left Column */}
-          <div className='flex w-full gap-6 items-start'>
+          <div className='flex w-full gap-6 items-start overflow-hidden'>
             <FormikInfiniteSelect
               name='board_id'
               label='Board'

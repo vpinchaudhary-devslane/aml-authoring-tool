@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -14,6 +14,7 @@ interface AmlPaginationProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   disabled?: boolean;
+  totalCount: number;
 }
 
 const AmlPagination: React.FC<AmlPaginationProps> = ({
@@ -21,6 +22,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
   totalPages = 1,
   onPageChange,
   disabled,
+  totalCount = 0,
 }) => {
   const handlePageClick = useCallback(
     (page: number) => {
@@ -88,14 +90,8 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
     return pageNumbers;
   };
 
-  useEffect(() => {
-    if (currentPage > totalPages || currentPage < 1) {
-      handlePageClick(1);
-    }
-  }, [currentPage, handlePageClick, totalPages]);
-
   return (
-    <Pagination className='justify-between mt-2'>
+    <Pagination className='justify-between items-center mt-2'>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
@@ -111,6 +107,7 @@ const AmlPagination: React.FC<AmlPaginationProps> = ({
           />
         </PaginationItem>
       </PaginationContent>
+      <p className='text-sm text-primary'>{totalCount} items</p>
     </Pagination>
   );
 };

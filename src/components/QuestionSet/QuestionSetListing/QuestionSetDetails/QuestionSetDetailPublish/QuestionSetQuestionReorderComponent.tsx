@@ -6,7 +6,7 @@ import { InfiniteSelect } from '@/shared-resources/InfiniteSelect/InfiniteSelect
 import { getListQuestionsAction } from '@/store/actions/question.action';
 import {
   isLoadingQuestionsSelector,
-  questionsSelector,
+  noCacheQuestionSelector,
 } from '@/store/selectors/questions.selector';
 import {
   closestCenter,
@@ -26,7 +26,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Filter, PlusCircle, Trash } from 'lucide-react';
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { QuestionSetPurposeType } from '@/enums/questionSet.enum';
 import * as _ from 'lodash';
@@ -185,7 +185,7 @@ const QuestionSetQuestionReorderComponent = ({
     class_id: '',
   });
 
-  const { result, totalCount } = useSelector(questionsSelector);
+  const { result, totalCount } = useSelector(noCacheQuestionSelector);
   const isLoadingQuestions = useSelector(isLoadingQuestionsSelector);
 
   const sensors = useSensors(
@@ -237,6 +237,17 @@ const QuestionSetQuestionReorderComponent = ({
   const enableClassFilter =
     questionSet?.purpose === QuestionSetPurposeType.MAIN_DIAGNOSTIC;
 
+  const filterCount = useMemo(() => {
+    const state = {
+      ...(enableClassFilter && { class_id: filterState.class_id }),
+      l2_skill: filterState.l2_skill,
+      l3_skill: filterState.l3_skill,
+    };
+
+    return Object.values(state).filter(Boolean).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterState]);
+
   return (
     <DndContext
       sensors={sensors}
@@ -246,7 +257,7 @@ const QuestionSetQuestionReorderComponent = ({
     >
       <div className='flex justify-between mt-3 mb-5 gap-5'>
         <h1 className='text-2xl font-bold'>Questions</h1>
-        <div className='flex flex-1 overflow-hidden flex-col gap-1 max-w-[350px]'>
+        <div className='flex flex-1 overflow-hidden flex-col gap-1 w-[300px]'>
           <InfiniteSelect
             key={mountCounter}
             isLoading={isLoadingQuestions}
@@ -256,6 +267,7 @@ const QuestionSetQuestionReorderComponent = ({
             dispatchAction={(values) =>
               getListQuestionsAction({
                 filters: {
+                  search_query: values.value,
                   l1_skill_id: questionSet.taxonomy.l1_skill.identifier,
                   repository_id: questionSet.repository.identifier,
                   board_id: questionSet.taxonomy.board.identifier,
@@ -268,6 +280,7 @@ const QuestionSetQuestionReorderComponent = ({
                   l2_skill_id: filterState.l2_skill,
                   l3_skill_id: filterState.l3_skill,
                 },
+                noCache: true,
               })
             }
             valueKey='identifier'
@@ -277,21 +290,19 @@ const QuestionSetQuestionReorderComponent = ({
           />
         </div>
         <div className='flex items-center gap-5'>
-          <Filter
-            className='h-6 w-6 fill-primary/70 hover:fill-primary text-primary/50 cursor-pointer'
+          <Button
+            className='relative'
             onClick={() =>
               setOpenDialog({ open: true, dialog: DialogTypes.FILTER })
             }
-          />
-          <Button
-            variant='outline'
-            onClick={() => {
-              setChangeState([]);
-              setMountCounter((prev) => prev + 1);
-            }}
-            disabled={!changeState.length}
           >
-            Cancel
+            <Filter className={cn('text-white')} />
+            Filters
+            {filterCount > 0 && (
+              <div className='absolute -top-2 -right-2 bg-gray-500 h-5 w-5 rounded-full flex items-center justify-center text-white text-xs'>
+                {filterCount}
+              </div>
+            )}
           </Button>
           <Button
             disabled={!changeState.length}

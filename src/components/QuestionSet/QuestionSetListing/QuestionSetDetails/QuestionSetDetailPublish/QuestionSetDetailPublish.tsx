@@ -12,6 +12,7 @@ import { QuestionOrderType } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import QuestionSetContentUploadForm from '@/components/QuestionSetContentUploadForm/QuestionSetContentUploadForm';
 import { resetMediaUploadStateAction } from '@/store/actions/media.actions';
+import { toReadableFormat } from '@/utils/helpers/helper';
 import QuestionSetQuestionReorderComponent from './QuestionSetQuestionReorderComponent';
 import QuestionSetContentComponent from '../QuestionSetDetailContent/QuestionSetContentComponent';
 
@@ -36,6 +37,7 @@ const QuestionSetDetailPublish = ({
 
   const [isOrderUpdated, setIsOrderUpdated] = useState(false);
   const [isNewUpload, setIsNewUpload] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   const [selectedContentId, setSelectedContentId] = useState<string | null>(
     null
@@ -83,7 +85,7 @@ const QuestionSetDetailPublish = ({
     },
     {
       label: 'Class',
-      value: questionSet?.taxonomy?.class?.name?.en,
+      value: toReadableFormat(questionSet?.taxonomy?.class?.name?.en),
       hasValue: Boolean(questionSet?.taxonomy?.class?.name?.en),
     },
     {
@@ -113,6 +115,7 @@ const QuestionSetDetailPublish = ({
   ];
 
   const handleSaveQuestionSet = () => {
+    setIsFormSubmitted(true);
     dispatch(
       updateQuestionSetAction({
         questionSetId: questionSet?.identifier,
@@ -128,7 +131,7 @@ const QuestionSetDetailPublish = ({
   };
 
   return (
-    <div className='p-4 h-full gap-3 flex flex-col max-h-[calc(100vh_-_48px)] bg-white shadow rounded-md'>
+    <div className='p-4 h-full gap-3 w-full flex flex-col max-h-[calc(100vh_-_48px)] bg-white shadow rounded-md'>
       <div className='flex-1 flex gap-3 overflow-hidden'>
         <div className='flex-1 flex flex-col overflow-y-auto mt-3 pr-3'>
           <h1 className='text-2xl font-bold mb-6'>Question Set - Details</h1>
@@ -164,7 +167,7 @@ const QuestionSetDetailPublish = ({
           />
         </div>
       </div>
-      <div className='flex justify-between'>
+      <div className='flex justify-between flex-row-reverse'>
         <div className='flex gap-3'>
           <Button
             size='lg'
@@ -172,8 +175,10 @@ const QuestionSetDetailPublish = ({
               isActionInProgress ||
               !(
                 isOrderUpdated ||
-                questionSet.content_ids?.[0] !== selectedContentId
-              )
+                Boolean(questionSet.content_ids?.[0]) !==
+                  Boolean(selectedContentId)
+              ) ||
+              isFormSubmitted
             }
             onClick={handleSaveQuestionSet}
           >
@@ -188,15 +193,17 @@ const QuestionSetDetailPublish = ({
             Cancel
           </Button>
         </div>
-        <Button
-          size='lg'
-          disabled={questionSet?.status !== 'draft' || isActionInProgress}
-          onClick={() =>
-            dispatch(publishQuestionSetAction(questionSet?.identifier))
-          }
-        >
-          Publish
-        </Button>
+        {questionSet?.status === 'draft' && (
+          <Button
+            size='lg'
+            disabled={isActionInProgress}
+            onClick={() =>
+              dispatch(publishQuestionSetAction(questionSet?.identifier))
+            }
+          >
+            Publish
+          </Button>
+        )}
       </div>
       <QuestionSetContentUploadForm
         open={isNewUpload}

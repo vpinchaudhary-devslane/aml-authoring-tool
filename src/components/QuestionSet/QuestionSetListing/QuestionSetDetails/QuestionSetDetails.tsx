@@ -184,6 +184,7 @@ const QuestionSetDetails = ({
             values?.purpose !== QuestionSetPurposeType.MAIN_DIAGNOSTIC &&
               values?.enable_feedback
           ),
+          is_atomic: false,
         };
 
         if (questionSet) {
@@ -400,17 +401,18 @@ const QuestionSetDetails = ({
               </span>
             </label>
           </div>
-          <div className='flex gap-5 mt-5'>
-            <Button type='submit' size='lg'>
-              Save
-            </Button>
+          <div className='flex gap-5 mt-5 flex-row-reverse'>
             <Button
               variant='outline'
               onClick={onClose}
               size='lg'
+              type='button'
               disabled={isFormSubmitted}
             >
               Cancel
+            </Button>
+            <Button type='submit' size='lg'>
+              Save
             </Button>
           </div>
         </form>

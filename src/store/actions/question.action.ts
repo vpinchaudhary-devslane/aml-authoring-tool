@@ -5,6 +5,7 @@ import { QuestionsActionType } from './actions.constants';
 
 export type QuestionsActionPayloadType = {
   filters: Partial<{
+    search_query: string;
     question_type: Array<QuestionType>;
     repository_id: string;
     board_id: string;
@@ -14,11 +15,13 @@ export type QuestionsActionPayloadType = {
     l3_skill_id: string;
     sub_skill_id: string;
   }> & { page_no: number };
+  noCache?: boolean;
 };
 export type QuestionsResponseType = {
   questions: Question[];
   totalCount: number;
   users?: User[];
+  noCache: boolean;
 };
 export const getListQuestionsAction = (
   payload: QuestionsActionPayloadType
