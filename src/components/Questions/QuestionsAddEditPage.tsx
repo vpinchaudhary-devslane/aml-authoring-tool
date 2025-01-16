@@ -5,6 +5,8 @@ import { allQuestionsSelector } from '@/store/selectors/questions.selector';
 import { Question } from '@/models/entities/Question';
 import { getQuestionAction } from '@/store/actions/question.action';
 import cx from 'classnames';
+import { ArrowLeft } from 'lucide-react';
+import { navigateTo } from '@/store/actions/navigation.action';
 import QuestionAddEditForm from './QuestionAddEditForm';
 import Loader from '../Loader/Loader';
 
@@ -47,7 +49,13 @@ const QuestionsAddEditPage: React.FC<QuestionsAddEditPageProps> = ({
         questionId ? '' : 'bg-white shadow rounded-md'
       )}
     >
-      <div className='flex justify-between items-center mb-4'>
+      <div className='flex gap-6 items-center mb-4'>
+        {!questionId && (
+          <ArrowLeft
+            className='h-8 w-8 cursor-pointer'
+            onClick={() => dispatch(navigateTo('/app/questions'))}
+          />
+        )}
         <h1 className='text-2xl font-bold'>
           {effectiveId ? 'Edit Question' : 'Add Question'}
         </h1>

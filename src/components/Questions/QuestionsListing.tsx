@@ -26,6 +26,7 @@ import AmlDialog from '@/shared-resources/AmlDialog/AmlDialog';
 import { useNavigate } from 'react-router-dom';
 import cx from 'classnames';
 import { usersSelector } from '@/store/selectors/user.selector';
+import { QuestionType } from '@/models/enums/QuestionType.enum';
 
 enum DialogTypes {
   DELETE = 'delete',
@@ -152,13 +153,26 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
       {
         accessorKey: 'question_body',
         header: 'Numbers',
+        // eslint-disable-next-line react/no-unstable-nested-components
         cell: (info) => {
+          const questionType = info.row.original?.question_type;
+
           const numbers = (info.getValue() as Question['question_body'])
             ?.numbers;
           const options = (info.getValue() as Question['question_body'])
             ?.options;
-          return getCommaSeparatedNumbers(numbers || options);
+
+          const renderCellValue = getCommaSeparatedNumbers(
+            questionType === QuestionType.MCQ ? options : (numbers as any)
+          );
+          return (
+            <AmlTooltip tooltip={renderCellValue}>
+              <p className='truncate'>{renderCellValue}</p>
+            </AmlTooltip>
+          );
         },
+        enableSorting: false,
+        cellClassName: 'max-w-10 [&_button]:max-w-full',
       },
       {
         accessorKey: 'menu',
@@ -212,6 +226,7 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
             )}
           </div>
         ),
+        enableSorting: false,
       },
     ],
     [isPublishing, isDeleting, usersMap]
@@ -219,7 +234,6 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
   const tableInstance = useTable({
     columns,
     rows: questions,
-    enableFilters: false,
     enableSorting: false,
   });
 
