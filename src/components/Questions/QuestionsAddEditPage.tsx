@@ -49,11 +49,13 @@ const QuestionsAddEditPage: React.FC<QuestionsAddEditPageProps> = ({
         questionId ? '' : 'bg-white shadow rounded-md'
       )}
     >
-      <div className='flex justify-between items-center mb-4'>
-        <ArrowLeft
-          className='h-8 w-8 cursor-pointer'
-          onClick={() => dispatch(navigateTo('/app/questions'))}
-        />
+      <div className='flex gap-6 items-center mb-4'>
+        {!questionId && (
+          <ArrowLeft
+            className='h-8 w-8 cursor-pointer'
+            onClick={() => dispatch(navigateTo('/app/questions'))}
+          />
+        )}
         <h1 className='text-2xl font-bold'>
           {effectiveId ? 'Edit Question' : 'Add Question'}
         </h1>
