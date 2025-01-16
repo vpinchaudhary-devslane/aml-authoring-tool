@@ -221,6 +221,7 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
   const tableInstance = useTable({
     columns,
     rows: questions,
+    enableSorting: false,
   });
 
   return (

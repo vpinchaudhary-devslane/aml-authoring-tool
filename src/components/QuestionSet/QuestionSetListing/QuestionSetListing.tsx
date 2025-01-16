@@ -184,6 +184,7 @@ const QuestionSetListing = () => {
   const tableInstance = useTable({
     columns,
     rows: questionSets,
+    enableSorting: false,
   });
 
   return (

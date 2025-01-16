@@ -5,11 +5,10 @@ import { allQuestionsSelector } from '@/store/selectors/questions.selector';
 import { Question } from '@/models/entities/Question';
 import { getQuestionAction } from '@/store/actions/question.action';
 import cx from 'classnames';
-import { ChevronLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { navigateTo } from '@/store/actions/navigation.action';
 import QuestionAddEditForm from './QuestionAddEditForm';
 import Loader from '../Loader/Loader';
-import { Button } from '../ui/button';
 
 interface QuestionsAddEditPageProps {
   questionId?: string;
@@ -51,13 +50,10 @@ const QuestionsAddEditPage: React.FC<QuestionsAddEditPageProps> = ({
       )}
     >
       <div className='flex justify-between items-center mb-4'>
-        <Button
-          type='button'
+        <ArrowLeft
+          className='h-8 w-8 cursor-pointer'
           onClick={() => dispatch(navigateTo('/app/questions'))}
-        >
-          <ChevronLeft />
-          Back
-        </Button>
+        />
         <h1 className='text-2xl font-bold'>
           {effectiveId ? 'Edit Question' : 'Add Question'}
         </h1>
