@@ -58,17 +58,20 @@ import {
 import MediaUpload from '@/shared-resources/MediaUpload/MediaUpload';
 import { useImageLoader } from '@/hooks/useImageLoader';
 import { navigateTo } from '@/store/actions/navigation.action';
+import { isUpdatingSelector } from '@/store/selectors/questions.selector';
 import Loader from '../Loader/Loader';
 import { ImageRenderer } from '../ImageRenderer';
 
 interface QuestionAddEditFormProps {
   id?: string;
   question?: Question | null;
+  onClose?: () => void;
 }
 
 const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
   id,
   question,
+  onClose,
 }) => {
   const isEditMode = Boolean(id);
   const dispatch = useDispatch();
@@ -148,6 +151,15 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
   const isLoadingClass = useSelector(isLoadingClassesSelector);
   const isLoadingSkill = useSelector(isLoadingSkillsSelector);
   const isLoadingSubSkill = useSelector(isLoadingSubSkillsSelector);
+  const isUpdating = useSelector(isUpdatingSelector);
+  const [isFormSubmitted, setIsFormSubmitted] = React.useState(false);
+
+  useEffect(() => {
+    if (!isUpdating && isFormSubmitted && onClose) {
+      setIsFormSubmitted(false);
+      onClose();
+    }
+  }, [isFormSubmitted, isUpdating, onClose]);
 
   const supportedLanguages = useMemo(() => {
     const res = {} as { [k: string]: boolean };
@@ -668,6 +680,7 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values) => {
+        setIsFormSubmitted(true);
         // Clean up the question_body before submitting
         const cleanedQuestionBody = cleanQuestionBody(
           values.question_body,
@@ -682,7 +695,14 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
           question_body: cleanedQuestionBody,
         };
         if (isEditMode && id) {
-          dispatch(updateQuestionAction({ id, question: payload }));
+          dispatch(
+            updateQuestionAction({
+              id,
+              question: payload,
+              // navigate to questions only when it's a page not in popup mode
+              navigate: !onClose,
+            })
+          );
         } else {
           dispatch(createQuestionAction(payload));
         }
@@ -894,7 +914,10 @@ const QuestionAddEditForm: React.FC<QuestionAddEditFormProps> = ({
           <div className='col-span-2 flex justify-end mt-4 space-x-4'>
             <Button
               variant='outline'
-              onClick={() => dispatch(navigateTo('/app/questions'))}
+              onClick={() =>
+                onClose ? onClose() : dispatch(navigateTo('/app/questions'))
+              }
+              disabled={isFormSubmitted}
               type='button'
             >
               Cancel
