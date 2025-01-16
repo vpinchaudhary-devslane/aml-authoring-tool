@@ -159,6 +159,7 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
             ?.options;
           return getCommaSeparatedNumbers(numbers || options);
         },
+        enableSorting: false,
       },
       {
         accessorKey: 'menu',
@@ -212,6 +213,7 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
             )}
           </div>
         ),
+        enableSorting: false,
       },
     ],
     [isPublishing, isDeleting, usersMap]
@@ -219,8 +221,6 @@ const QuestionsListing: React.FC<QuestionsListingProps> = ({
   const tableInstance = useTable({
     columns,
     rows: questions,
-    enableFilters: false,
-    enableSorting: false,
   });
 
   return (
